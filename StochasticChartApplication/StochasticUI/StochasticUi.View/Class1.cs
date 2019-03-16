@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace StochasticUi.View
 {
-    public class Class1
+    struct Payload
     {
+        public long first;
+        public long second;
+        public long third;
+        public long fourth;
     }
 }
