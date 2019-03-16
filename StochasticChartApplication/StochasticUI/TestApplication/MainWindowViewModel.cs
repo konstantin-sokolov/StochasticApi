@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Practices.Prism.Commands;
@@ -14,7 +16,6 @@ namespace TestApplication
     public class MainWindowViewModel : BindableBase
     {
         private ImageSource _imageSource;
-        private StatisticRender _render = new StatisticRender();
         public MainWindowViewModel()
         {
             CalculateSourceCommand = new DelegateCommand(CalculateImage);
@@ -32,10 +33,15 @@ namespace TestApplication
         {
             var randNum = new Random();
             var data = Enumerable
-                .Range(0, StatisticRender.IMAGE_WIDTH)
+                .Range(0, StatisticRender.IMAGE_HEIGHT)
                 .Select(i => randNum.NextDouble())
                 .ToArray();
-            ImageSource = _render.RenderData(data);
+            ImageSource = StatisticRender.RenderData(data);
+        }
+
+        public void ChangeScale(int eDelta, Point getPosition)
+        {
+            Trace.WriteLine("Test");
         }
     }
 }

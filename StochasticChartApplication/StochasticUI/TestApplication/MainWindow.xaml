@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TestApplication"
+
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
@@ -13,6 +13,7 @@
         </Grid.RowDefinitions>
         <Button Margin="10" Width="100" Height="30" Grid.Row="1" Content="Calculate" 
                 Command="{Binding CalculateSourceCommand}"/>
-        <Image Grid.Row="0" Margin="10" Source="{Binding ImageSource}" Stretch="Fill"/>
+        <Image Name="EventsImage" Grid.Row="0" Margin="10" Source="{Binding ImageSource}" Stretch="Fill" MouseWheel="Image_OnMouseWheel">
+        </Image>
     </Grid>
 </Window>
