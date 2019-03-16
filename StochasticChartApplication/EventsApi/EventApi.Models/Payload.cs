@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace EventApi.Models
 {
-    public class Payload
+    public struct Payload
     {
+        public long first;
+        public long second;
+        public long third;
+        public long fourth;
     }
 }
