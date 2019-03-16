@@ -51,7 +51,34 @@ namespace EventApi.Implementation
 
         public void LoadData(PayloadEvent[] events)
         {
+            if (events == null)
+                throw new ArgumentNullException(nameof(events));
+
+            //do it only if necessary. If we trust to provider then can be removed. 
+            var result = ValidateEvents(events);
+            if (!result)
+                throw new ArgumentException("Not valid input data. It should be sorted and presented in pairs", nameof(events));
+
             _events = events;
+        }
+
+        private bool ValidateEvents(IEnumerable<PayloadEvent> events)
+        {
+            var currentEventIsStart = true;
+            var currentTime = 0L;
+
+            foreach (var simpleEvent in events)
+            {
+                if ((simpleEvent.EventType == EventType.start) == currentEventIsStart)
+                    return false;
+                if (simpleEvent.Ticks < currentTime)
+                    return false;
+
+                currentEventIsStart = !currentEventIsStart;
+                currentTime = simpleEvent.Ticks;
+            }
+
+            return !currentEventIsStart;
         }
     }
 }
