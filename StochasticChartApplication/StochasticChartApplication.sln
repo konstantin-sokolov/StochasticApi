@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticChartApplication", "StochasticChartApplication\StochasticChartApplication.csproj", "{2AC3B857-0047-49DD-B660-D330622EC03D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventsApi", "EventsApi", "{7444A514-B2F4-4664-90D6-CBDDAF39CD29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventApi.Models", "EventsApi\EventApi.Models\EventApi.Models.csproj", "{484A5D12-305B-410C-AD37-601BB2E10CFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventApi.Implementation", "EventsApi\EventApi.Implementation\EventApi.Implementation.csproj", "{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.Contracts", "EventsApi\EventsApi.Contracts\EventsApi.Contracts.csproj", "{16B29C2E-24E5-4492-A80C-867616767E40}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StochasticUI", "StochasticUI", "{7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticUi.ViewModel", "StochasticUI\StochasticUi.ViewModel\StochasticUi.ViewModel.csproj", "{29B6459C-1201-429F-A366-8602802E5AF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticUi.View", "StochasticUI\StochasticUi.View\StochasticUi.View.csproj", "{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2AC3B857-0047-49DD-B660-D330622EC03D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AC3B857-0047-49DD-B660-D330622EC03D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AC3B857-0047-49DD-B660-D330622EC03D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AC3B857-0047-49DD-B660-D330622EC03D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{484A5D12-305B-410C-AD37-601BB2E10CFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{484A5D12-305B-410C-AD37-601BB2E10CFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{484A5D12-305B-410C-AD37-601BB2E10CFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{484A5D12-305B-410C-AD37-601BB2E10CFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B29C2E-24E5-4492-A80C-867616767E40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16B29C2E-24E5-4492-A80C-867616767E40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16B29C2E-24E5-4492-A80C-867616767E40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16B29C2E-24E5-4492-A80C-867616767E40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29B6459C-1201-429F-A366-8602802E5AF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29B6459C-1201-429F-A366-8602802E5AF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29B6459C-1201-429F-A366-8602802E5AF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29B6459C-1201-429F-A366-8602802E5AF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{484A5D12-305B-410C-AD37-601BB2E10CFB} = {7444A514-B2F4-4664-90D6-CBDDAF39CD29}
+		{3AF3EE9D-9EDB-454A-B43E-826A8C09E945} = {7444A514-B2F4-4664-90D6-CBDDAF39CD29}
+		{16B29C2E-24E5-4492-A80C-867616767E40} = {7444A514-B2F4-4664-90D6-CBDDAF39CD29}
+		{29B6459C-1201-429F-A366-8602802E5AF0} = {7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}
+		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715} = {7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A90F1501-0D7C-446C-A476-DD6280A08D95}
+	EndGlobalSection
+EndGlobal
