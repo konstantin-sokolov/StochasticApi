@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Autofac;
+using NLog;
 using Prism.Autofac;
 using StochasticUi.ViewModel;
 
@@ -45,6 +46,9 @@ namespace StochasticChartApplication.DI
 
             // регистрация зависимостей в контейнере
             // должны быть здесь...
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+            builder.RegisterInstance(logger).As<ILogger>();
+
             builder.RegisterType<ScaleInfo>().As<IScaleInfo>();
             builder.RegisterType<EventDensityViewModel>();
             builder.RegisterType<MainWindowViewModel>();
