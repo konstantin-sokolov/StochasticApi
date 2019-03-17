@@ -6,6 +6,13 @@
         mc:Ignorable="d"
         Title="Stochastic events" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="70"/>
+        </Grid.RowDefinitions>
+        <Button Margin="10" Width="100" Height="30" Grid.Row="1" Content="Calculate" 
+                Command="{Binding CalculateSourceCommand}"/>
+        <ContentPresenter Content="{Binding EventDensityViewModel}">
+        </ContentPresenter>
     </Grid>
 </Window>
