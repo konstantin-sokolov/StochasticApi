@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Practices.Prism.Commands;
@@ -55,5 +52,10 @@ namespace StochasticUi.ViewModel
         }
 
         #endregion public bindings
+
+        public void StartDraw()
+        {
+            //todo
+        }
     }
 }

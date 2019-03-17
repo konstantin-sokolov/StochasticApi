@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using EventApi.Models;
 using EventsApi.Contracts;
 using NLog;
@@ -99,7 +101,7 @@ namespace EventApi.Implementation
 
             foreach (var simpleEvent in events)
             {
-                if ((simpleEvent.EventType == EventType.start) == currentEventIsStart)
+                if ((simpleEvent.EventType == EventType.start) != currentEventIsStart)
                     return false;
                 if (simpleEvent.Ticks < currentTime)
                     return false;
@@ -108,7 +110,7 @@ namespace EventApi.Implementation
                 currentTime = simpleEvent.Ticks;
             }
 
-            return !currentEventIsStart;
+            return currentEventIsStart;
         }
     }
 }

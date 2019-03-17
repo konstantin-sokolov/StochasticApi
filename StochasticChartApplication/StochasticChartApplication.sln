@@ -19,8 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticUi.ViewModel", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticUi.View", "StochasticUI\StochasticUi.View\StochasticUi.View.csproj", "{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticUI.TestApplication", "StochasticUI\TestApplication\StochasticUI.TestApplication.csproj", "{E2BF58F1-B0E4-467B-9708-D1C9D8750FC1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,10 +49,6 @@ Global
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2BF58F1-B0E4-467B-9708-D1C9D8750FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2BF58F1-B0E4-467B-9708-D1C9D8750FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2BF58F1-B0E4-467B-9708-D1C9D8750FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2BF58F1-B0E4-467B-9708-D1C9D8750FC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,7 +59,6 @@ Global
 		{16B29C2E-24E5-4492-A80C-867616767E40} = {7444A514-B2F4-4664-90D6-CBDDAF39CD29}
 		{29B6459C-1201-429F-A366-8602802E5AF0} = {7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715} = {7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}
-		{E2BF58F1-B0E4-467B-9708-D1C9D8750FC1} = {7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A90F1501-0D7C-446C-A476-DD6280A08D95}
