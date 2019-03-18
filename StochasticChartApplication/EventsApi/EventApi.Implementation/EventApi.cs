@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 using EventsApi.Contracts;
 using NLog;
@@ -11,106 +9,136 @@ namespace EventApi.Implementation
     public class EventApi : IEventApi
     {
         private readonly ILogger _logger;
-        private PayloadEvent[] _events;
+        private readonly IDataProvider _dataProvider;
+        private readonly long _globalStartTick;
+        private readonly long _globalStopTick;
+        private readonly long _globalEventsCount;
 
-        public EventApi(ILogger logger)
+        public EventApi(ILogger logger, IDataProvider dataProvider)
         {
             _logger = logger;
+            _dataProvider = dataProvider;
+            _globalEventsCount = _dataProvider.GetGlobalEventsCount();
+            _globalStartTick = _dataProvider.GetGlobalStartTick();
+            _globalStopTick = _dataProvider.GetGlobalStopTick();
         }
 
-        public IEnumerable<PayloadEvent> GetEvents(long startTick, long stopTick)
+        public PayloadEvent[] GetEvents(long startTick, long stopTick)
         {
-            if (_events == null)
+            _logger.Info($"EventApi: Requested events between: {startTick}-{stopTick}");
+            if (_globalEventsCount == 0)
             {
-                var message = "Call GetEvents for not preloaded api. Call LoadData first";
-                _logger.Error(message);
-                throw new Exception(message);
+                _logger.Info("EventApi: _globalEventsCount == 0 - return empty results");
+                return new PayloadEvent[0];
+            }
+            if (startTick > _globalStopTick)
+            {
+                _logger.Info("EventApi: startTick > _globalStopTick - return empty results");
+                return new PayloadEvent[0];
             }
 
-            if (startTick > stopTick)
+            if (stopTick < _globalStartTick)
             {
-                var message = "Incorrect request, start should be less than stop";
-                _logger.Error(message);
-                throw new ArgumentException(message);
+                _logger.Info("EventApi: stopTick < _globalStartTick - return empty results");
+                return new PayloadEvent[0];
             }
 
-            try
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            var startIndex = GetStartIndex(startTick);
+            var stopIndex = GetStopIndex(stopTick);
+            var result = _dataProvider.GetEventsBetween(startIndex, stopIndex);
+            stopWatch.Stop();
+            _logger.Info($"EventApi: Got {result.Length} events in {stopWatch.ElapsedMilliseconds}ms");
+            return result;
+        }
+
+        private long GetStartIndex(long startTick)
+        {
+            if (startTick < _globalStartTick)
+                return 0;
+
+            var compareResult = FindNearest(startTick, true, out var nearestIndex);
+            switch (compareResult)
             {
-                if (_events.Length < 2)
-                    return new PayloadEvent[0];
-
-                if (stopTick < _events[0].Ticks)
-                    return new PayloadEvent[0];
-
-                if (startTick < _events[_events.Length - 1].Ticks)
-                    return new PayloadEvent[0];
-
-                var fromIndex = -1L;
-                var toIndex = -1L;
-                //stupid logic should be removed in future
-                for (int i = 0; i < _events.Length; i++)
+                case 0:
+                    return nearestIndex;
+                case -1:
                 {
-                    if (_events[i].Ticks <= startTick)
-                        fromIndex = i;
+                    //nearest on the left side check next stop after nearest for intersection 
+                    var leftStopEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
+                    return leftStopEvent.Ticks < startTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
+                }
+                default:
+                {
+                    //nearest on the right side 
+                    var rightStopEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
+                    return rightStopEvent.Ticks > startTick ? nearestIndex - 2 : nearestIndex;//it can't be first, because of check in start of searching
+                    }
+            }
+        }
 
-                    if (_events[i].Ticks <= stopTick)
-                        continue;
+        private long GetStopIndex(long stopTick)
+        {
+            if (stopTick > _globalStopTick)
+                return _globalEventsCount-1;
 
-                    toIndex = i;
-                    break;
+            var compareResult = FindNearest(stopTick, false, out var nearestIndex);
+            switch (compareResult)
+            {
+                case 0:
+                    return nearestIndex;
+                case -1:
+                { 
+                    //nearest on the left side check next stop after nearest for intersection 
+                    var rightStartEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
+                    return rightStartEvent.Ticks < stopTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
+                }
+                default:
+                {
+                    //nearest on the right side 
+                    var leftStartEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
+                    return leftStartEvent.Ticks > stopTick ? nearestIndex - 2 : nearestIndex;
+                }
+            }
+
+        }
+
+        private int FindNearest(long ticks, bool even, out long index)
+        {
+            long first = 0;
+            long last = _globalEventsCount / 2 - 1;
+            long mid;
+            int compareResult;
+            do
+            {
+                mid = first + (last - first) / 2;
+                var globalIndex = even ? 2 * mid : 2 * mid + 1;
+                var item = GetEventAtIndex(globalIndex);
+                if (item.Ticks == ticks)
+                {
+                    index = globalIndex;
+                    return 0;
                 }
 
-                fromIndex = Math.Max(fromIndex, 0);
-                toIndex = Math.Min(toIndex, _events.Length - 1);
-                var count = toIndex - fromIndex;
-                var resultArray = new PayloadEvent[count];
-                Array.Copy(_events, fromIndex, resultArray, 0, count);
-                return resultArray;
-            }
-            catch (Exception e)
-            {
-               _logger.Error($"Error while GetEvents from EventApi:{e.Message} - {e.StackTrace}");
-               throw e;
-            }
+                if (item.Ticks < ticks)
+                {
+                    first = mid + 1;
+                    compareResult = -1;
+                }
+                else
+                {
+                    last = mid - 1;
+                    compareResult = 1;
+                }
+            } while (first <= last);
+            index = even ? 2 * mid : 2 * mid + 1;
+            return compareResult;
         }
 
-        public void LoadData(PayloadEvent[] events)
+        private PayloadEvent GetEventAtIndex(long index)
         {
-            if (events == null)
-            {
-                _logger.Error("Call LoadData with null data");
-                throw new ArgumentNullException(nameof(events));
-            }
-
-            //do it only if necessary. If we trust to provider then can be removed. 
-            var result = ValidateEvents(events);
-            if (!result)
-            {
-                var message = "Not valid input data. It should be sorted and presented in pairs";
-                _logger.Error(message);
-                throw new ArgumentException(message, nameof(events));
-            }
-
-            _events = events;
-        }
-
-        private bool ValidateEvents(IEnumerable<PayloadEvent> events)
-        {
-            var currentEventIsStart = true;
-            var currentTime = 0L;
-
-            foreach (var simpleEvent in events)
-            {
-                if ((simpleEvent.EventType == EventType.start) != currentEventIsStart)
-                    return false;
-                if (simpleEvent.Ticks < currentTime)
-                    return false;
-
-                currentEventIsStart = !currentEventIsStart;
-                currentTime = simpleEvent.Ticks;
-            }
-
-            return currentEventIsStart;
+            return _dataProvider.GetEventAtIndex(index);
         }
     }
 }

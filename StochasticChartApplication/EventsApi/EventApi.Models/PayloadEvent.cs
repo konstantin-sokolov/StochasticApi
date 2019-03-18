@@ -1,6 +1,6 @@
 ﻿namespace EventApi.Models
 {
-    public class PayloadEvent
+    public struct PayloadEvent
     {
         public EventType EventType { get; private set; }
         public Payload Payload { get; set; }
@@ -10,6 +10,7 @@
         {
             EventType = eventType;
             Ticks = ticks;
+            Payload = new Payload();
         }
     }
 }

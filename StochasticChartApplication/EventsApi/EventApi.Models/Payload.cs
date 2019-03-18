@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EventApi.Models
+﻿namespace EventApi.Models
 {
     public struct Payload
     {
@@ -12,5 +6,13 @@ namespace EventApi.Models
         public long second;
         public long third;
         public long fourth;
+
+        public Payload(long first,long second,long third, long fourth)
+        {
+            this.first = first;
+            this.second = second;
+            this.third = third;
+            this.fourth = fourth;
+        }
     }
 }

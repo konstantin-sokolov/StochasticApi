@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticUi.ViewModel", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticUi.View", "StochasticUI\StochasticUi.View\StochasticUi.View.csproj", "{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{2E9F168D-C8D1-43E0-BF1F-59124DA6E8CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventApi.Implementation.UnitTests", "Tests\EventApi.Implementation.UnitTests\EventApi.Implementation.UnitTests.csproj", "{66653EB0-1064-4599-8781-BEE62437C97E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +53,10 @@ Global
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66653EB0-1064-4599-8781-BEE62437C97E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66653EB0-1064-4599-8781-BEE62437C97E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66653EB0-1064-4599-8781-BEE62437C97E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66653EB0-1064-4599-8781-BEE62437C97E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +67,7 @@ Global
 		{16B29C2E-24E5-4492-A80C-867616767E40} = {7444A514-B2F4-4664-90D6-CBDDAF39CD29}
 		{29B6459C-1201-429F-A366-8602802E5AF0} = {7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}
 		{845ECE8E-7F83-4C37-B385-D8BEDF9AF715} = {7DE099F7-D3C3-42B7-AD48-6A4AA92573D1}
+		{66653EB0-1064-4599-8781-BEE62437C97E} = {2E9F168D-C8D1-43E0-BF1F-59124DA6E8CE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A90F1501-0D7C-446C-A476-DD6280A08D95}

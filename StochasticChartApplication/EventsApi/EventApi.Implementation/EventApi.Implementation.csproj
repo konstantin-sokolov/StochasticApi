@@ -49,6 +49,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataProviders\ArrayDataProvider.cs" />
+    <Compile Include="DataProviders\IDataProvider.cs" />
+    <Compile Include="DataProviders\MMFDataProvider.cs" />
     <Compile Include="EventApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
