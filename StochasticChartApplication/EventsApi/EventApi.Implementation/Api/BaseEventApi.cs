@@ -1,59 +1,24 @@
-﻿using System.Diagnostics;
-using EventApi.Implementation.DataProviders;
+﻿using EventApi.Implementation.DataProviders;
 using EventApi.Models;
-using EventsApi.Contracts;
-using NLog;
 
-namespace EventApi.Implementation
+namespace EventApi.Implementation.Api
 {
-    public class EventApi : IEventApi
+    public abstract class BaseEventApi 
     {
-        private readonly ILogger _logger;
-        private readonly IDataProvider _dataProvider;
-        private readonly long _globalStartTick;
-        private readonly long _globalStopTick;
-        private readonly long _globalEventsCount;
+        protected readonly IDataProvider _dataProvider;
+        protected readonly long _globalStartTick;
+        protected readonly long _globalStopTick;
+        protected readonly long _globalEventsCount;
 
-        public EventApi(ILogger logger, IDataProvider dataProvider)
+        protected BaseEventApi(IDataProvider dataProvider)
         {
-            _logger = logger;
             _dataProvider = dataProvider;
             _globalEventsCount = _dataProvider.GetGlobalEventsCount();
             _globalStartTick = _dataProvider.GetGlobalStartTick();
             _globalStopTick = _dataProvider.GetGlobalStopTick();
         }
-
-        public PayloadEvent[] GetEvents(long startTick, long stopTick)
-        {
-            _logger.Info($"EventApi: Requested events between: {startTick}-{stopTick}");
-            if (_globalEventsCount == 0)
-            {
-                _logger.Info("EventApi: _globalEventsCount == 0 - return empty results");
-                return new PayloadEvent[0];
-            }
-            if (startTick > _globalStopTick)
-            {
-                _logger.Info("EventApi: startTick > _globalStopTick - return empty results");
-                return new PayloadEvent[0];
-            }
-
-            if (stopTick < _globalStartTick)
-            {
-                _logger.Info("EventApi: stopTick < _globalStartTick - return empty results");
-                return new PayloadEvent[0];
-            }
-
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            var startIndex = GetStartIndex(startTick);
-            var stopIndex = GetStopIndex(stopTick);
-            var result = _dataProvider.GetEventsBetween(startIndex, stopIndex);
-            stopWatch.Stop();
-            _logger.Info($"EventApi: Got {result.Length} events in {stopWatch.ElapsedMilliseconds}ms");
-            return result;
-        }
-
-        private long GetStartIndex(long startTick)
+      
+        protected long GetStartIndex(long startTick)
         {
             if (startTick < _globalStartTick)
                 return 0;
@@ -73,15 +38,15 @@ namespace EventApi.Implementation
                 {
                     //nearest on the right side 
                     var rightStopEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
-                    return rightStopEvent.Ticks > startTick ? nearestIndex - 2 : nearestIndex;//it can't be first, because of check in start of searching
-                    }
+                    return rightStopEvent.Ticks > startTick ? nearestIndex - 2 : nearestIndex; //it can't be first, because of check in start of searching
+                }
             }
         }
 
-        private long GetStopIndex(long stopTick)
+        protected long GetStopIndex(long stopTick)
         {
             if (stopTick > _globalStopTick)
-                return _globalEventsCount-1;
+                return _globalEventsCount - 1;
 
             var compareResult = FindNearest(stopTick, false, out var nearestIndex);
             switch (compareResult)
@@ -89,7 +54,7 @@ namespace EventApi.Implementation
                 case 0:
                     return nearestIndex;
                 case -1:
-                { 
+                {
                     //nearest on the left side check next stop after nearest for intersection 
                     var rightStartEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
                     return rightStartEvent.Ticks < stopTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
@@ -132,11 +97,12 @@ namespace EventApi.Implementation
                     compareResult = 1;
                 }
             } while (first <= last);
+
             index = even ? 2 * mid : 2 * mid + 1;
             return compareResult;
         }
 
-        private PayloadEvent GetEventAtIndex(long index)
+        protected PayloadEvent GetEventAtIndex(long index)
         {
             return _dataProvider.GetEventAtIndex(index);
         }

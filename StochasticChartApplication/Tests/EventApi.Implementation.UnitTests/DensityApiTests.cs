@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using AutoFixture;
+using EventApi.Implementation.Api;
 using EventApi.Implementation.DataProviders;
 using EventApi.Implementation.UnitTests.TestCases;
 using EventApi.Models;
@@ -11,9 +13,9 @@ using NUnit.Framework;
 namespace EventApi.Implementation.UnitTests
 {
     [TestFixture]
-    public class EventApiTests
+    public class DensityApiTests
     {
-        private Api.EventApi _eventApi;
+        private DensityApi _densityApi;
         private readonly IFixture _fixture = new Fixture();
         private PayloadEvent[] _array;
 
@@ -30,17 +32,15 @@ namespace EventApi.Implementation.UnitTests
 
             var loggerMock = new Mock<ILogger>();
             var dataProvider = new ArrayDataProvider(_array);
-            _eventApi = new Api.EventApi(loggerMock.Object, dataProvider);
+            _densityApi = new DensityApi(loggerMock.Object, dataProvider);
         }
 
         [Test]
-        [TestCaseSource(typeof(EventApiTestCases),nameof(EventApiTestCases.TestCases))]
-        public void GetEvents_CheckIntervals(long start, long stop, int[] indexes)
+        [TestCaseSource(typeof(DensityApiTestCases),nameof(DensityApiTestCases.TestCases))]
+        public void GetEvents_CheckIntervals(long start, long stop,long groupInterval, IEnumerable<DensityInfo> expected)
         {
-            var actual = _eventApi.GetEvents(start, stop).ToArray();
-            actual.Length.Should().Be(indexes.Length);
-            for (int i = 0; i < indexes.Length; i++)
-                actual[i].Should().BeEquivalentTo(_array[indexes[i]]);
+            var actual = _densityApi.GetDensityInfo(start, stop, groupInterval);
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using AutoFixture;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
@@ -14,12 +13,10 @@ namespace EventApi.Implementation.UnitTests
     class ArrayDataProviderTests
     {
         readonly IFixture _fixture = new Fixture();
-        private int _entitySize;
 
         [OneTimeSetUp]
         public void Init()
         {
-            _entitySize = Marshal.SizeOf(typeof(PayloadEvent));
         }
 
         [Test]
@@ -62,7 +59,7 @@ namespace EventApi.Implementation.UnitTests
             var arraySize = 6;
             var array = _fixture.CreateMany<PayloadEvent>(arraySize).ToArray();
             var dataProvider = new ArrayDataProvider(array);
-            var actual = dataProvider.GetEventsBetween(2, 3);
+            var actual = dataProvider.GetEventsBetween(2, 3).ToArray();
             actual.Length.Should().Be(2);
             actual[0].Should().BeEquivalentTo(array[2]);
             actual[1].Should().BeEquivalentTo(array[3]);

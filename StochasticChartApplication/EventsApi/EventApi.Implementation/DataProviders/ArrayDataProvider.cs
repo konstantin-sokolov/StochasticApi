@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using EventApi.Models;
 
 namespace EventApi.Implementation.DataProviders
@@ -17,9 +18,9 @@ namespace EventApi.Implementation.DataProviders
             return _array[index];
         }
 
-        public PayloadEvent[] GetEventsBetween(long startIndex, long stopIndex)
+        public IEnumerable<PayloadEvent> GetEventsBetween(long startIndex, long stopIndex)
         {
-            if (stopIndex < startIndex)
+            if (stopIndex <= startIndex)
                 return new PayloadEvent[0];
             var result = new PayloadEvent[stopIndex - startIndex + 1];
             Array.Copy(_array, startIndex, result, 0, stopIndex - startIndex + 1);

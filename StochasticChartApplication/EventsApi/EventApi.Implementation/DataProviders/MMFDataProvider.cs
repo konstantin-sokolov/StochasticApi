@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using EventApi.Models;
@@ -34,8 +35,11 @@ namespace EventApi.Implementation.DataProviders
             }
         }
 
-        public PayloadEvent[] GetEventsBetween(long startIndex, long stopIndex)
+        public IEnumerable<PayloadEvent> GetEventsBetween(long startIndex, long stopIndex)
         {
+            if (stopIndex<=startIndex)
+                return new PayloadEvent[0];
+
             var offset = startIndex * _entitySize;
             var count = stopIndex - startIndex;
             var result = new PayloadEvent[count];

@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DensityInfo.cs" />
     <Compile Include="PayloadEvent.cs" />
     <Compile Include="EventType.cs" />
     <Compile Include="Payload.cs" />

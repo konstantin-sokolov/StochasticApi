@@ -9,6 +9,18 @@ namespace EventApi.Implementation.UnitTests.TestCases
         {
             get
             {
+                yield return new TestCaseData(130, 140, new int[0])
+                {
+                    TestName = "NoEvents_middle"
+                };
+                yield return new TestCaseData(1000, 1200, new int[0])
+                {
+                    TestName = "NoEvents_right"
+                };
+                yield return new TestCaseData(0, 10, new int[0])
+                {
+                    TestName = "NoEvents_left"
+                };
                 yield return new TestCaseData(0, 1000, new[] {0, 1, 2, 3, 4, 5})
                 {
                     TestName = "GetAllEvents"
