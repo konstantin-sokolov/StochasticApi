@@ -17,7 +17,7 @@ namespace StochasticUi.View
         private void Image_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (DataContext is EventDensityViewModel dataContext)
-                dataContext.ChangeScale(e.Delta, e.GetPosition(EventsImage));
+                dataContext.ChangeScale(e.GetPosition(EventsImage).X / EventsImage.ActualWidth, e.Delta > 0);
 
         }
     }

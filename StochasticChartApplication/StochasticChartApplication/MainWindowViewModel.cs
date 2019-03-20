@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using EventsApi.Contracts;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
@@ -8,12 +9,10 @@ namespace StochasticChartApplication
 {
     public class MainWindowViewModel : BindableBase
     {
-        private readonly IEventApi _eventApi;
-        private readonly int _dataSize = 1000 * 1000 * 10;
+        private readonly int _dataSize = 1000 * 100;
 
-        public MainWindowViewModel(EventDensityViewModel eventsViewModel, IEventApi eventApi)
+        public MainWindowViewModel(EventDensityViewModel eventsViewModel)
         {
-            _eventApi = eventApi;
             EventDensityViewModel = eventsViewModel;
             GenerateDataCommand = new DelegateCommand(GenerateData);
         }
@@ -24,13 +23,12 @@ namespace StochasticChartApplication
 
         private void GenerateData()
         {
-            //var result = new PayloadEvent[DATA_SIZE];
-            //for (int i = 0; i < DATA_SIZE; i++)
-            //    result[i] = new PayloadEvent(i % 2 == 0 ? EventType.start : EventType.stop, i);
+            var random = new Random();
+            var result = new double[_dataSize];
+            for (int i = 0; i < _dataSize; i++)
+                result[i] = random.NextDouble();
 
-            //_eventApi.LoadData(result);
-            //EventDensityViewModel.StartDraw();
-            ////EventDensityViewModel.ImageSource = StatisticRender.RenderData(data);
+            EventDensityViewModel.ImageSource = StatisticRender.RenderData(result);
         }
     }
 }

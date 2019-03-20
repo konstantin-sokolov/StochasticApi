@@ -3,46 +3,52 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
+using StochasticUi.ViewModel.Scale;
 using Point = System.Windows.Point;
 
 namespace StochasticUi.ViewModel
 {
     public class EventDensityViewModel:BindableBase
     {
-        private readonly IScaleInfo _scaleInfo;
+        private readonly IScaler _scaler;
         private ImageSource _imageSource;
 
-        public EventDensityViewModel(IScaleInfo scaleInfo)
+        public EventDensityViewModel(IScaler scaler)
         {
-            _scaleInfo = scaleInfo;
+            _scaler = scaler;
             MoveLeftCommand = new DelegateCommand(MoveLeft);
             MoveRightCommand = new DelegateCommand(MoveRight);
         }
 
         private void MoveRight()
         {
-            _scaleInfo.MoveRight();
+            _scaler.MoveRight();
+            OnPropertyChanged(nameof(CanMoveRight));
+            OnPropertyChanged(nameof(CanMoveLeft));
         }
 
         private void MoveLeft()
         {
-            _scaleInfo.MoveLeft();
+            _scaler.MoveLeft();
+            OnPropertyChanged(nameof(CanMoveRight));
+            OnPropertyChanged(nameof(CanMoveLeft));
         }
 
         #region public bindings
 
-        public bool CanMoveRight => _scaleInfo.CanMoveRight;
+        public bool CanMoveRight => _scaler.CanMoveRight;
 
-        public bool CanMoveLeft => _scaleInfo.CanMoveLeft;
+        public bool CanMoveLeft => _scaler.CanMoveLeft;
 
         public ICommand MoveLeftCommand { get; }
 
         public ICommand MoveRightCommand { get; }
 
-        public void ChangeScale(int delta, Point center)
+        public void ChangeScale(double centerRelativePos,bool decrease)
         {
-            Trace.WriteLine("Test");
-            _scaleInfo.Scale(delta, center);
+            _scaler.Scale(centerRelativePos, decrease);
+            OnPropertyChanged(nameof(CanMoveRight));
+            OnPropertyChanged(nameof(CanMoveLeft));
         }
 
         public ImageSource ImageSource

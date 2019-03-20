@@ -1,9 +1,11 @@
 ﻿using System.Windows;
 using Autofac;
+using EventApi.Implementation.DataProviders;
 using EventsApi.Contracts;
 using NLog;
 using Prism.Autofac;
 using StochasticUi.ViewModel;
+using StochasticUi.ViewModel.Scale;
 
 namespace StochasticChartApplication.DI
 {
@@ -49,8 +51,9 @@ namespace StochasticChartApplication.DI
             // должны быть здесь...
             var logger = NLog.LogManager.GetCurrentClassLogger();
             builder.RegisterInstance(logger).As<ILogger>();
+            builder.RegisterType<ArrayDataProvider>().As<IDataProvider>();
             builder.RegisterType<EventApi.Implementation.Api.EventApi>().As<IEventApi>().InstancePerLifetimeScope();
-            builder.RegisterType<ScaleInfo>().As<IScaleInfo>();
+            builder.RegisterType<Scaler>().As<IScaler>();
             builder.RegisterType<EventDensityViewModel>();
             builder.RegisterType<MainWindowViewModel>();
             return builder;

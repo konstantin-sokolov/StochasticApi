@@ -63,8 +63,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EventDensityViewModel.cs" />
-    <Compile Include="ScaleInfo.cs" />
-    <Compile Include="IScaleInfo.cs" />
+    <Compile Include="Scale\Scaler.cs" />
+    <Compile Include="Scale\ScaleInfo.cs" />
+    <Compile Include="Scale\IScaler.cs" />
     <Compile Include="StatisticRender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
