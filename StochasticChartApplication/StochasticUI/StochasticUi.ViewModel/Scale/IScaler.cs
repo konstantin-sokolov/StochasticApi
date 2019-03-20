@@ -10,7 +10,7 @@
 
         void Scale(double centerRelativePos, bool decrease);
 
-        void Init(long globalStart, long globalStop);
+        void Init(long globalStart, long globalStop, long minSize);
         ScaleInfo GetCurrentScaleInfo();
     }
 }
