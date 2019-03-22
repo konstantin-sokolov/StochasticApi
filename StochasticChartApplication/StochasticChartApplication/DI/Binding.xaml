@@ -1,8 +1,16 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:viewModel="clr-namespace:StochasticUi.ViewModel;assembly=StochasticUi.ViewModel"
-                    xmlns:view="clr-namespace:StochasticUi.View;assembly=StochasticUi.View">
+                    xmlns:view="clr-namespace:StochasticUi.View;assembly=StochasticUi.View"
+                    xmlns:generatorArgs="clr-namespace:StochasticUi.ViewModel.GeneratorArgs;assembly=StochasticUi.ViewModel"
+                    xmlns:generatorArgs1="clr-namespace:StochasticUi.View.GeneratorArgs;assembly=StochasticUi.View">
     <DataTemplate DataType="{x:Type viewModel:EventDensityViewModel}">
          <view:EventDensityView/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type generatorArgs:ArrayGeneratorArgsViewModel}">
+        <generatorArgs1:ArrayGeneratorArgsView/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type generatorArgs:MMFGeneratorArgsViewModel}">
+        <generatorArgs1:MMFGeneratorArgsView/>
     </DataTemplate>
 </ResourceDictionary>

@@ -57,10 +57,31 @@
     <Compile Include="EventDensityView.xaml.cs">
       <DependentUpon>EventDensityView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GeneratorArgs\ArrayGeneratorArgsView.xaml.cs">
+      <DependentUpon>ArrayGeneratorArgsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GeneratorArgs\MMFGeneratorArgsView.xaml.cs">
+      <DependentUpon>MMFGeneratorArgsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ProgressPanel.xaml.cs">
+      <DependentUpon>ProgressPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="EventDensityView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GeneratorArgs\ArrayGeneratorArgsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GeneratorArgs\MMFGeneratorArgsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ProgressPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

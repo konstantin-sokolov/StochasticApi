@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}</ProjectGuid>
+    <ProjectGuid>{5BAA032E-3766-4D4E-B344-35051E281E45}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EventApi.Implementation</RootNamespace>
-    <AssemblyName>EventApi.Implementation</AssemblyName>
+    <RootNamespace>Generators</RootNamespace>
+    <AssemblyName>Generators</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -31,16 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NLog.4.5.11\lib\net45\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,27 +41,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\DensityApi.cs" />
-    <Compile Include="Api\BaseEventApi.cs" />
-    <Compile Include="Api\EventApi.cs" />
-    <Compile Include="DataProviders\ArrayDataProvider.cs" />
-    <Compile Include="DataProviders\IDataProvider.cs" />
-    <Compile Include="DataProviders\MMFDataProvider.cs" />
-    <Compile Include="DataProviders\ProviderType.cs" />
+    <Compile Include="ArrayEventGenerator.cs" />
+    <Compile Include="BaseEventGenerator.cs" />
+    <Compile Include="GeneratorFactory.cs" />
+    <Compile Include="IEventGenerator.cs" />
+    <Compile Include="MmfEventGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EventApi.Models\EventApi.Models.csproj">
-      <Project>{484a5d12-305b-410c-ad37-601bb2e10cfb}</Project>
+    <ProjectReference Include="..\..\EventsApi\EventApi.Implementation\EventApi.Implementation.csproj">
+      <Project>{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}</Project>
+      <Name>EventApi.Implementation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EventsApi\EventApi.Models\EventApi.Models.csproj">
+      <Project>{484A5D12-305B-410C-AD37-601BB2E10CFB}</Project>
       <Name>EventApi.Models</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EventsApi.Contracts\EventsApi.Contracts.csproj">
-      <Project>{16b29c2e-24e5-4492-a80c-867616767e40}</Project>
-      <Name>EventsApi.Contracts</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

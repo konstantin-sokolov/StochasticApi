@@ -6,7 +6,7 @@ using EventApi.Models;
 
 namespace EventApi.Implementation.DataProviders
 {
-    class MMFDataProvider : IDataProvider, IDisposable
+    public class MMFDataProvider : IDataProvider, IDisposable
     {
         private readonly int _entitySize;
         private readonly MemoryMappedFile _memoryMappedFile;

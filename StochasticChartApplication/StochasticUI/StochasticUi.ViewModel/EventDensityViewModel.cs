@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
+using EventsApi.Contracts;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using StochasticUi.ViewModel.Scale;
@@ -11,11 +12,13 @@ namespace StochasticUi.ViewModel
     public class EventDensityViewModel:BindableBase
     {
         private readonly IScaler _scaler;
+        private readonly IDensityApi _densityApi;
         private ImageSource _imageSource;
 
-        public EventDensityViewModel(IScaler scaler)
+        public EventDensityViewModel(IScaler scaler,IDensityApi densityApi)
         {
             _scaler = scaler;
+            _densityApi = densityApi;
             MoveLeftCommand = new DelegateCommand(MoveLeft);
             MoveRightCommand = new DelegateCommand(MoveRight);
         }
@@ -47,7 +50,6 @@ namespace StochasticUi.ViewModel
         public void ChangeScale(double centerRelativePos,bool decrease)
         {
             _scaler.Scale(centerRelativePos, decrease);
-            OnPropertyChanged(nameof(CanMoveRight));
             OnPropertyChanged(nameof(CanMoveLeft));
         }
 

@@ -150,6 +150,10 @@
       <Project>{16b29c2e-24e5-4492-a80c-867616767e40}</Project>
       <Name>EventsApi.Contracts</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Helpers\Generators\Generators.csproj">
+      <Project>{5BAA032E-3766-4D4E-B344-35051E281E45}</Project>
+      <Name>Generators</Name>
+    </ProjectReference>
     <ProjectReference Include="..\StochasticUI\StochasticUi.ViewModel\StochasticUi.ViewModel.csproj">
       <Project>{29B6459C-1201-429F-A366-8602802E5AF0}</Project>
       <Name>StochasticUi.ViewModel</Name>

@@ -62,7 +62,11 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\ProviderTypeConverter.cs" />
     <Compile Include="EventDensityViewModel.cs" />
+    <Compile Include="GeneratorArgs\MMFGeneratorArgsViewModel.cs" />
+    <Compile Include="GeneratorArgs\ArrayGeneratorArgsViewModel.cs" />
+    <Compile Include="GeneratorArgs\BaseGeneratorArgsViewModel.cs" />
     <Compile Include="Scale\Scaler.cs" />
     <Compile Include="Scale\ScaleInfo.cs" />
     <Compile Include="Scale\IScaler.cs" />
@@ -71,6 +75,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\EventsApi\EventsApi.Contracts\EventsApi.Contracts.csproj">
+      <Project>{16B29C2E-24E5-4492-A80C-867616767E40}</Project>
+      <Name>EventsApi.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
