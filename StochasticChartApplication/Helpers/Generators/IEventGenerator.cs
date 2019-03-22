@@ -8,6 +8,6 @@ namespace Generators
     public interface IEventGenerator
     {
         Task<IDataProvider> GenerateDataProviderAsync(long size, object[] parameters);
-        event Action<double> EventGenerateProgressChanged;
+        event Action<int> EventGenerateProgressChanged;
     }
 }

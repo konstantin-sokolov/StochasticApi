@@ -10,6 +10,7 @@ namespace Generators
         public async Task<IDataProvider> GenerateDataProviderAsync(long collectionSize, object[] parameters)
         {
             PayloadEvent[] eventArray = null;
+            int currentPercent = 0;
             await Task.Run(() =>
             {
                 eventArray = new PayloadEvent[collectionSize];
@@ -17,12 +18,18 @@ namespace Generators
                 {
                     var newEvent = GetNextEvent();
                     eventArray[i] = newEvent;
-                    EventGenerateProgressChanged?.Invoke((double) i / collectionSize);
+                    var percent = (int)(100 * i / collectionSize);
+                    if (currentPercent != percent)
+                    {
+                        currentPercent = percent;
+                        EventGenerateProgressChanged?.Invoke(percent);
+                    }
+                   
                 }
             }).ConfigureAwait(false);
             return new ArrayDataProvider(eventArray);
         }
 
-        public event Action<double> EventGenerateProgressChanged;
+        public event Action<int> EventGenerateProgressChanged;
     }
 }

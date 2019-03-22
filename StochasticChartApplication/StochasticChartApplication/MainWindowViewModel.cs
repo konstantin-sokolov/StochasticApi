@@ -13,9 +13,10 @@ namespace StochasticChartApplication
     public class MainWindowViewModel : BindableBase
     {
         private readonly GeneratorFactory _generatorFactory;
+        private readonly DensityViewModelFactory _viewModelFactory;
         private readonly long _defaultArrayDataSize = 1000 * 1000 * 10;
         private readonly long _defaultMmfDataSize = 1000L * 1000L * 1000L * 100L;
-
+        private Dispatcher _uiDispatcher;
         private BaseGeneratorArgsViewModel _activeArgsViewModel;
         private readonly ArrayGeneratorArgsViewModel _arrayGeneratorArgsViewModel;
         private readonly MMFGeneratorArgsViewModel _mmfGeneratorArgsViewModel;
@@ -25,9 +26,11 @@ namespace StochasticChartApplication
         private bool _isProcessingData;
         private EventDensityViewModel _eventsDensityViewModel;
 
-        public MainWindowViewModel(GeneratorFactory generatorFactory)
+        public MainWindowViewModel(GeneratorFactory generatorFactory, DensityViewModelFactory viewModelFactory)
         {
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
             _generatorFactory = generatorFactory;
+            _viewModelFactory = viewModelFactory;
             GenerateDataCommand = new DelegateCommand(GenerateData);
             SkipSessionCommand = new DelegateCommand(SkipSession);
             _arrayGeneratorArgsViewModel = new ArrayGeneratorArgsViewModel()
@@ -49,18 +52,26 @@ namespace StochasticChartApplication
             IsProcessingData = true;
             var generator = _generatorFactory.GetGenerator(ProviderType);
             generator.EventGenerateProgressChanged += OnEventGenerateProgressChanged;
-            generator.GenerateDataProviderAsync(_activeArgsViewModel.GetCollectionSize(), _activeArgsViewModel.GetParameters());
-            generator.EventGenerateProgressChanged -= OnEventGenerateProgressChanged;
-            IsProcessingData = false;
+            generator.GenerateDataProviderAsync(_activeArgsViewModel.GetCollectionSize(), _activeArgsViewModel.GetParameters())
+                .ContinueWith(dataProvider =>
+                {
+                    generator.EventGenerateProgressChanged -= OnEventGenerateProgressChanged;
+                    _uiDispatcher.BeginInvoke(new Action(() =>
+                    {
+                        IsProcessingData = false;
+                        EventDensityViewModel = _viewModelFactory.GetViewModel(dataProvider.Result);
+                    }));
+                });
         }
+
         private void SkipSession()
         {
             EventDensityViewModel = null;
         }
 
-        private void OnEventGenerateProgressChanged(double progress)
+        private void OnEventGenerateProgressChanged(int progress)
         {
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => { ProgressValue = progress; }));
+            _uiDispatcher.BeginInvoke(new Action(() => { ProgressValue = progress; }));
         }
 
         public ICommand GenerateDataCommand { get; }

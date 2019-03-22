@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=4.9.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.4.9.1\lib\net45\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.Prism.Mvvm, Version=1.1.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Prism.Mvvm.1.1.1\lib\net45\Microsoft.Practices.Prism.Mvvm.dll</HintPath>
     </Reference>
@@ -67,6 +70,7 @@
     <Compile Include="GeneratorArgs\MMFGeneratorArgsViewModel.cs" />
     <Compile Include="GeneratorArgs\ArrayGeneratorArgsViewModel.cs" />
     <Compile Include="GeneratorArgs\BaseGeneratorArgsViewModel.cs" />
+    <Compile Include="DensityViewModelFactory.cs" />
     <Compile Include="Scale\Scaler.cs" />
     <Compile Include="Scale\ScaleInfo.cs" />
     <Compile Include="Scale\IScaler.cs" />
@@ -77,6 +81,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\EventsApi\EventApi.Implementation\EventApi.Implementation.csproj">
+      <Project>{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}</Project>
+      <Name>EventApi.Implementation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\EventsApi\EventsApi.Contracts\EventsApi.Contracts.csproj">
       <Project>{16B29C2E-24E5-4492-A80C-867616767E40}</Project>
       <Name>EventsApi.Contracts</Name>

@@ -20,7 +20,7 @@ namespace Generators
             return new MMFDataProvider(filePath, entitySize);
         }
 
-        public event Action<double> EventGenerateProgressChanged;
+        public event Action<int> EventGenerateProgressChanged;
 
         private string ParseArgs(object[] parameters)
         {
@@ -32,6 +32,7 @@ namespace Generators
         private void WriteDataToFile(string filePath, int entitySize, long collectionSize)
         {
             var fileSize = entitySize * collectionSize;
+            int currentPercent = 0;
             using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var mmf = MemoryMappedFile.CreateFromFile(fs, "Events", fileSize, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, false))
             {
@@ -41,7 +42,12 @@ namespace Generators
                     {
                         var pEVent = GetNextEvent();
                         accessor.Write(i * entitySize, ref pEVent);
-                        EventGenerateProgressChanged?.Invoke((double) i / collectionSize);
+                        var percent = (int)(100 * i / collectionSize);
+                        if (currentPercent != percent)
+                        {
+                            currentPercent = percent;
+                            EventGenerateProgressChanged?.Invoke(percent);
+                        }
                     }
                 }
             }
