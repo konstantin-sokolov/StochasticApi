@@ -5,10 +5,13 @@ using EventApi.Models;
 
 namespace Generators
 {
-    class ArrayEventGenerator : BaseEventGenerator, IEventGenerator
+    internal class ArrayEventGenerator : BaseEventGenerator, IEventGenerator
     {
         public async Task<IDataProvider> GenerateDataProviderAsync(long collectionSize, object[] parameters)
         {
+            if (collectionSize % 2 != 0)
+                throw new ArgumentException("Collection size should be even number", nameof(collectionSize));
+
             PayloadEvent[] eventArray = null;
             int currentPercent = 0;
             await Task.Run(() =>

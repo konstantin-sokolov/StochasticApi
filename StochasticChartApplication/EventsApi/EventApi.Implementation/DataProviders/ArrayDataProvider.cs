@@ -50,5 +50,10 @@ namespace EventApi.Implementation.DataProviders
         {
             //do nothing
         }
+
+        public void Dispose()
+        {
+            //do nothing
+        }
     }
 }

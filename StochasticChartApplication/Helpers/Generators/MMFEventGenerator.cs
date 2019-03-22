@@ -12,8 +12,10 @@ namespace Generators
     {
         public async Task<IDataProvider> GenerateDataProviderAsync(long collectionSize, object[] parameters)
         {
-            var filePath = ParseArgs(parameters);
+            if (collectionSize % 2 != 0)
+                throw new ArgumentException("Collection size should be even number", nameof(collectionSize));
 
+            var filePath = ParseAndValidateArgs(parameters);
             var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
             await Task.Run(() => { WriteDataToFile(filePath, entitySize, collectionSize); }).ConfigureAwait(false);
 
@@ -22,18 +24,28 @@ namespace Generators
 
         public event Action<int> EventGenerateProgressChanged;
 
-        private string ParseArgs(object[] parameters)
+        private string ParseAndValidateArgs(object[] parameters)
         {
+            if (parameters == null)
+                throw new ArgumentException("Wrong parameters for MemoryMappedGenerator. Parameters shouldn't be null");
+
             if (parameters.Length != 1)
                 throw new ArgumentException("Wrong count of parameters for MemoryMappedGenerator. There should be 1 parameter - filepath");
-            return (string) parameters[0];
+            var filePath = (string) parameters[0];
+            if (string.IsNullOrEmpty(filePath))
+                throw new ArgumentException("Wrong value for filepath. It can't be null or empty");
+            return filePath;
         }
 
         private void WriteDataToFile(string filePath, int entitySize, long collectionSize)
         {
+            var directory = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
             var fileSize = entitySize * collectionSize;
             int currentPercent = 0;
-            using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var fs = new FileStream(filePath, FileMode.CreateNew))
             using (var mmf = MemoryMappedFile.CreateFromFile(fs, "Events", fileSize, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, false))
             {
                 using (var accessor = mmf.CreateViewAccessor(0, fileSize))
