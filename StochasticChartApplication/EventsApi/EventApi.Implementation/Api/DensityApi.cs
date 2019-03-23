@@ -48,7 +48,7 @@ namespace EventApi.Implementation.Api
                 var stopEvent = _dataProvider.GetEventAtIndex(stopIndex);
                 result.Add(new DensityInfo()
                 {
-                    Count = stopIndex - startIndex + 1,
+                    EventsCount = stopIndex - startIndex + 1,
                     Start = startEvent.Ticks,
                     Stop = stopEvent.Ticks
                 });
