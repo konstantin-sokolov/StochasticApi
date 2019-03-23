@@ -15,7 +15,7 @@ namespace StochasticUi.ViewModel
 {
     public class EventDensityViewModel : BindableBase
     {
-        private const int IMAGE_WIDTH = 2000;
+        private const int IMAGE_WIDTH = 400;
 
         private readonly IScaler _scaler;
         private readonly IDensityApi _densityApi;
@@ -65,11 +65,7 @@ namespace StochasticUi.ViewModel
                 var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
                 var densities = _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval);
 
-                if (!densities.Any())
-                    return ChartRender.RenderEmptyData();
-
-                var maxDensity = densities.Max(t => t.EventsCount);
-                return ChartRender.RenderData(densities.Select(d => (double)d.EventsCount / maxDensity).ToArray());
+                return ChartRender.RenderData(densities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
             }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = imageSource.Result; })));
         }
         private void RecalculateTimeLineImage()
