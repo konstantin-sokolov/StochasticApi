@@ -14,7 +14,6 @@ namespace Generators.UnitTests
             var generatorFactory = new GeneratorFactory();
             var generator = generatorFactory.GetGenerator(ProviderType.Array);
             var dataProvider = generator.GenerateDataProviderAsync(size, null).Result;
-            dataProvider.Init();
             CheckDataProvider(dataProvider, size);
         }
 

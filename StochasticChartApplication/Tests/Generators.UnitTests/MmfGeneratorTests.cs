@@ -36,7 +36,6 @@ namespace Generators.UnitTests
             var generator = generatorFactory.GetGenerator(ProviderType.MemoryMappedFile);
             var dataProvider = generator.GenerateDataProviderAsync(size, new []{ fileName }).Result;
             _generatedFiles.Add(fileName);
-            dataProvider.Init();
             CheckDataProvider(dataProvider, size);
             Assert.That(File.Exists(fileName));
         }

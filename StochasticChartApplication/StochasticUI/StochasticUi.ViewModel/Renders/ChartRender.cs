@@ -11,7 +11,7 @@ using Point = System.Drawing.Point;
 
 namespace StochasticUi.ViewModel.Renders
 {
-    internal static class ChartRender
+    public static class ChartRender
     {
         public const int IMAGE_WIDTH = 1400;
         public const int IMAGE_HEIGHT = 1000;
