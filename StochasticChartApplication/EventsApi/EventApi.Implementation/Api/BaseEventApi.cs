@@ -1,9 +1,10 @@
-﻿using EventApi.Implementation.DataProviders;
+﻿using System;
+using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 
 namespace EventApi.Implementation.Api
 {
-    public abstract class BaseEventApi 
+    public abstract class BaseEventApi :IDisposable
     {
         protected readonly IDataProvider _dataProvider;
         protected readonly long _globalStartTick;
@@ -105,6 +106,11 @@ namespace EventApi.Implementation.Api
         protected PayloadEvent GetEventAtIndex(long index)
         {
             return _dataProvider.GetEventAtIndex(index);
+        }
+
+        public void Dispose()
+        {
+            _dataProvider?.Dispose();
         }
     }
 }

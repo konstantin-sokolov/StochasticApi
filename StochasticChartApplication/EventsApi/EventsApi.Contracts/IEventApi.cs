@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using EventApi.Models;
 
 namespace EventsApi.Contracts
 {
-    public interface IEventApi
+    public interface IEventApi:IDisposable
     {
         IEnumerable<PayloadEvent> GetEvents(long startTick, long stopTick);
     }

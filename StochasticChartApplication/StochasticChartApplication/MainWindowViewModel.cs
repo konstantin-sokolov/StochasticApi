@@ -67,6 +67,7 @@ namespace StochasticChartApplication
 
         private void SkipSession()
         {
+            EventDensityViewModel?.Dispose();
             EventDensityViewModel = null;
         }
 

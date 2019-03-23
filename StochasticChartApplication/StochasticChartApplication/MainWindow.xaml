@@ -82,7 +82,7 @@
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Button Grid.Row="0" Margin="10" Width="150" Height="30"  Content="Skip Session. Back To Arguments" 
+            <Button Grid.Row="0" Margin="10" Width="Auto" Height="30"  Content="Skip Session. Back To Arguments" 
                     Command="{Binding SkipSessionCommand}"/>
             <ContentPresenter Grid.Row="1" Content="{Binding EventDensityViewModel}"/>
         </Grid>

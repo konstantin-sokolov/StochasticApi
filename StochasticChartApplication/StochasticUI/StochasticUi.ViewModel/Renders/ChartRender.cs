@@ -23,7 +23,7 @@ namespace StochasticUi.ViewModel.Renders
         public static ImageSource RenderData(IEnumerable<DensityInfo> densities, long startTicks,long ticksCount)
         {
             if (!densities.Any())
-                RenderEmptyData();
+                return RenderEmptyData();
 
             return BaseRender.RenderData(IMAGE_WIDTH, IMAGE_HEIGHT, g => RenderObject(g, densities, startTicks, ticksCount));
         }

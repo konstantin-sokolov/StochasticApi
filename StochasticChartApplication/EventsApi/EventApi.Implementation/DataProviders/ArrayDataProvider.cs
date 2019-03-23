@@ -46,11 +46,6 @@ namespace EventApi.Implementation.DataProviders
             return -1;
         }
 
-        public void Init()
-        {
-            //do nothing
-        }
-
         public void Dispose()
         {
             //do nothing

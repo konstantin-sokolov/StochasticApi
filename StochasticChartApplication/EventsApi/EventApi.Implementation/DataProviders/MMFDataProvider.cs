@@ -10,11 +10,10 @@ namespace EventApi.Implementation.DataProviders
     {
         private readonly int _entitySize;
         private readonly MemoryMappedFile _memoryMappedFile;
-        private readonly long _fileSize;
 
-        private long _globalStartTicks;
-        private long _globalEventsCount;
-        private long _globalStopTicks;
+        private readonly long _globalStartTicks;
+        private readonly long _globalEventsCount;
+        private readonly long _globalStopTicks;
        
         public MMFDataProvider(string fileSource, int entitySize)
         {
@@ -22,7 +21,21 @@ namespace EventApi.Implementation.DataProviders
                 throw new ArgumentException($"File doesn't exist:{fileSource}", nameof(fileSource));
             _memoryMappedFile = MemoryMappedFile.CreateFromFile(fileSource, FileMode.Open);
             _entitySize = entitySize;
-            _fileSize = new FileInfo(fileSource).Length;
+            var fileSize = new FileInfo(fileSource).Length;
+
+            if (fileSize % _entitySize != 0)
+                throw new Exception("File size not proportional to entity size");
+
+            _globalEventsCount = fileSize / _entitySize;
+            if (_globalEventsCount <= 0)
+            {
+                _globalStartTicks = -1;
+                _globalStopTicks = -1;
+                return;
+            }
+
+            _globalStartTicks = GetEventAtIndex(0).Ticks;
+            _globalStopTicks = GetEventAtIndex(_globalEventsCount - 1).Ticks;
         }
 
         public PayloadEvent GetEventAtIndex(long index)
@@ -69,22 +82,6 @@ namespace EventApi.Implementation.DataProviders
         public long GetGlobalStopTick()
         {
             return _globalStopTicks;
-        }
-
-        public void Init()
-        {
-            if (_fileSize % _entitySize != 0)
-                throw new Exception("File size not proportional to entity size");
-            _globalEventsCount = _fileSize / _entitySize;
-            if (_globalEventsCount <= 0)
-            {
-                _globalStartTicks = -1;
-                _globalStopTicks = -1;
-                return;
-            }
-
-            _globalStartTicks = GetEventAtIndex(0).Ticks;
-            _globalStopTicks = GetEventAtIndex(_globalEventsCount - 1).Ticks;
         }
 
         public void Dispose()

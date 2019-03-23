@@ -13,7 +13,7 @@ using StochasticUi.ViewModel.Scale;
 
 namespace StochasticUi.ViewModel
 {
-    public class EventDensityViewModel : BindableBase
+    public class EventDensityViewModel : BindableBase,IDisposable
     {
         private const int IMAGE_WIDTH = 400;
 
@@ -119,6 +119,10 @@ namespace StochasticUi.ViewModel
 
         #endregion public bindings
 
-       
+
+        public void Dispose()
+        {
+            _densityApi?.Dispose();
+        }
     }
 }

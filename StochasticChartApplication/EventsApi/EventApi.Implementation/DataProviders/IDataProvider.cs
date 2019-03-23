@@ -11,6 +11,5 @@ namespace EventApi.Implementation.DataProviders
         long GetGlobalEventsCount();
         long GetGlobalStartTick();
         long GetGlobalStopTick();
-        void Init();
     }
 }
