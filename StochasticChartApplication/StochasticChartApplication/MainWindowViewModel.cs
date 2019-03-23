@@ -15,8 +15,8 @@ namespace StochasticChartApplication
         private readonly GeneratorFactory _generatorFactory;
         private readonly DensityViewModelFactory _viewModelFactory;
         private readonly long _defaultArrayDataSize = 1000 * 1000 * 10;
-        private readonly long _defaultMmfDataSize = 1000L * 1000L * 1000L * 100L;
-        private Dispatcher _uiDispatcher;
+        private readonly long _defaultMmfDataSize = 1000L * 1000L * 1000L;
+        private readonly Dispatcher _uiDispatcher;
         private BaseGeneratorArgsViewModel _activeArgsViewModel;
         private readonly ArrayGeneratorArgsViewModel _arrayGeneratorArgsViewModel;
         private readonly MMFGeneratorArgsViewModel _mmfGeneratorArgsViewModel;
@@ -39,7 +39,7 @@ namespace StochasticChartApplication
             };
             _mmfGeneratorArgsViewModel = new MMFGeneratorArgsViewModel()
             {
-                CollectionSize = _defaultArrayDataSize.ToString(),
+                CollectionSize = _defaultMmfDataSize.ToString(),
                 FilePath = "TestData.bin"
             };
             ProviderType = ProviderType.Array;
@@ -48,7 +48,8 @@ namespace StochasticChartApplication
 
         private void GenerateData()
         {
-            ProgressStatus = "Test set generation";
+            ProgressValue = 0;
+            ProgressStatus = $"Test set generation: {ProgressValue}%";
             IsProcessingData = true;
             var generator = _generatorFactory.GetGenerator(ProviderType);
             generator.EventGenerateProgressChanged += OnEventGenerateProgressChanged;
@@ -71,7 +72,11 @@ namespace StochasticChartApplication
 
         private void OnEventGenerateProgressChanged(int progress)
         {
-            _uiDispatcher.BeginInvoke(new Action(() => { ProgressValue = progress; }));
+            _uiDispatcher.BeginInvoke(new Action(() =>
+            {
+                ProgressValue = progress;
+                ProgressStatus = $"Test set generation: {progress}%";
+            }));
         }
 
         public ICommand GenerateDataCommand { get; }

@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.Practices.Prism.Mvvm;
+﻿using Microsoft.Practices.Prism.Mvvm;
 
 namespace StochasticUi.ViewModel.GeneratorArgs
 {
@@ -12,7 +11,7 @@ namespace StochasticUi.ViewModel.GeneratorArgs
             get => _collectionSize;
             set
             {
-                if (long.TryParse(value, out long tempResult))
+                if (long.TryParse(value, out _))
                     SetProperty(ref _collectionSize, value);
             }
         }

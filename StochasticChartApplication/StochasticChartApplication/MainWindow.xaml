@@ -44,7 +44,7 @@
                                  ConverterParameter=MemoryMappedFile}"  />
             </StackPanel>
             <ContentPresenter Grid.Row="1" Content="{Binding ActiveArgsViewModel}"/>
-            <Button Grid.Row="2" Margin="10" Width="100" Height="30"  Content="Calculate" 
+            <Button Grid.Row="2" Margin="10" Width="100" Height="30"  Content="Generate DataSet" 
                     Command="{Binding GenerateDataCommand}"/>
         </Grid>
 

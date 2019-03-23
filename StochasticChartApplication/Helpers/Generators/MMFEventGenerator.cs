@@ -10,6 +10,8 @@ namespace Generators
 {
     class MmfEventGenerator : BaseEventGenerator, IEventGenerator
     {
+        public const long BATCH_SIZE = 10000;
+
         public async Task<IDataProvider> GenerateDataProviderAsync(long collectionSize, object[] parameters)
         {
             if (collectionSize % 2 != 0)
@@ -40,25 +42,40 @@ namespace Generators
         private void WriteDataToFile(string filePath, int entitySize, long collectionSize)
         {
             var directory = Path.GetDirectoryName(filePath);
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                directory = Path.Combine(Directory.GetCurrentDirectory(), "MmfDataProviders");
+                filePath = Path.Combine(directory, filePath);
+            }
+
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
+            if (File.Exists(filePath))
+                File.Delete(filePath);
 
             var fileSize = entitySize * collectionSize;
             int currentPercent = 0;
             using (var fs = new FileStream(filePath, FileMode.CreateNew))
             using (var mmf = MemoryMappedFile.CreateFromFile(fs, "Events", fileSize, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, false))
             {
-                using (var accessor = mmf.CreateViewAccessor(0, fileSize))
+                var batchCount = collectionSize / BATCH_SIZE;
+
+                for (int b = 0; b < batchCount; b++)
                 {
-                    for (long i = 0; i < collectionSize; i++)
+                    var currentBatchSize = Math.Min(BATCH_SIZE, collectionSize - b * BATCH_SIZE);
+
+                    using (var accessor = mmf.CreateViewAccessor(b * BATCH_SIZE * entitySize, currentBatchSize * entitySize))
                     {
-                        var pEVent = GetNextEvent();
-                        accessor.Write(i * entitySize, ref pEVent);
-                        var percent = (int)(100 * i / collectionSize);
-                        if (currentPercent != percent)
+                        for (long i = 0; i < currentBatchSize; i++)
                         {
-                            currentPercent = percent;
-                            EventGenerateProgressChanged?.Invoke(percent);
+                            var pEVent = GetNextEvent();
+                            accessor.Write(i * entitySize, ref pEVent);
+                            var tempPercent = (int)(100 * (i + b * BATCH_SIZE) / collectionSize);
+                            if (currentPercent != tempPercent)
+                            {
+                                currentPercent = tempPercent;
+                                EventGenerateProgressChanged?.Invoke(currentPercent);
+                            }
                         }
                     }
                 }
