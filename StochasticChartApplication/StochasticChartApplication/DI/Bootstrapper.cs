@@ -51,11 +51,11 @@ namespace StochasticChartApplication.DI
             // должны быть здесь...
             var logger = NLog.LogManager.GetCurrentClassLogger();
             builder.RegisterInstance(logger).As<ILogger>();
-            builder.RegisterType<ArrayDataProvider>().As<IDataProvider>();
             builder.RegisterType<EventApi.Implementation.Api.EventApi>().As<IEventApi>();
             builder.RegisterType<EventApi.Implementation.Api.DensityApi>().As<IDensityApi>();
             builder.RegisterType<Scaler>().As<IScaler>();
             builder.RegisterType<EventDensityViewModel>();
+            builder.RegisterType<DensityViewModelFactory>();
             builder.RegisterType<MainWindowViewModel>();
             return builder;
         }

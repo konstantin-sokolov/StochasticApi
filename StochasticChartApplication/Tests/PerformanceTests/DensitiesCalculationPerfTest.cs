@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Loggers;
 using EventApi.Implementation.Api;
 using EventApi.Implementation.DataProviders;
@@ -10,14 +11,14 @@ using StochasticUi.ViewModel;
 
 namespace PerformanceTests
 {
-    [ClrJob(baseline: true)]
+    [SimpleJob(RunStrategy.ColdStart, 5)]
     [RPlotExporter, RankColumn]
     public class DensitiesCalculationPerfTest
     {
         private IDensityApi _densityApi;
         private IDataProvider _provider;
         private NLog.ILogger _logger;
-        private const int RequestedSize = 2000;
+        private const int RequestedSize = 400;
 
         private long _globalStart;
         private long _globalStop;
