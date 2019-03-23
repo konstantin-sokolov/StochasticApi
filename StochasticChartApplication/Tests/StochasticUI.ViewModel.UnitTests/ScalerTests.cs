@@ -18,8 +18,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void Scaler_CheckInitialState()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             ScaleInfo expectedScaleInfo = new ScaleInfo()
             {
                 CurrentStart = 0,
@@ -42,8 +41,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void Scale_CheckStateAfterScale()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             scaler.Scale(0.5, true);
 
             scaler.CanMoveLeft.Should().Be(true);
@@ -58,8 +56,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void Scale_CheckDecreaseAndIncrease()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             scaler.Scale(0.5, true);
             scaler.Scale(0.5, false);
             scaler.Scale(0.5, false);
@@ -72,8 +69,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void MoveRight_TillTheEnd()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             scaler.Scale(0.5, true);
 
             while (scaler.CanMoveRight)
@@ -86,8 +82,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void MoveLeft_TillTheEnd()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             scaler.Scale(0.5, true);
 
             while (scaler.CanMoveLeft)
@@ -100,8 +95,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void Scale_CheckLeftCenterPoint()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             scaler.Scale(0, true);
 
             var actual = scaler.GetCurrentScaleInfo();
@@ -111,8 +105,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void Scale_CheckRightCenterPoint()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             scaler.Scale(1, true);
 
             var actual = scaler.GetCurrentScaleInfo();
@@ -122,8 +115,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void Scale_CheckMinSize()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             var steps = Math.Log((double) TEST_MIN_SIZE / 100, Scaler.SCALE_STEP_RATIO);
             for (int i = 0; i < steps + 1; i++)
                 scaler.Scale(0.5, true);
@@ -135,8 +127,7 @@ namespace StochasticUI.ViewModel.UnitTests
         [Test]
         public void Scale_CheckCenterPosition()
         {
-            var scaler = new Scaler();
-            scaler.Init(0, 100, TEST_MIN_SIZE);
+            var scaler = new Scaler(0, 100, TEST_MIN_SIZE);
             var steps = Math.Log((double)TEST_MIN_SIZE / 100, Scaler.SCALE_STEP_RATIO);
             for (int i = 0; i < steps + 1; i++)
                 scaler.Scale(0.5, true);
