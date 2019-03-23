@@ -6,15 +6,27 @@ namespace StochasticUi.ViewModel.Scale
     {
         public const double MOVE_STEP_RATIO = 0.05;
         public const double SCALE_STEP_RATIO = 0.6;
+        public const long  MINS_SIZE = 10000;
 
-        private long _globalStart;
-        private long _globalStop;
-        private long _globalSize;
+        private readonly long _globalStart;
+        private readonly long _globalStop;
+        private readonly long _globalSize;
 
         private long _currentStart;
         private long _currentStop;
         private long _currentSize;
         private long _minSize;
+
+        public Scaler(long globalStart, long globalStop)
+        {
+            _globalStart = globalStart;
+            _globalStop = globalStop;
+            _currentStart = _globalStart;
+            _currentStop = _globalStop;
+            _globalSize = _globalStop - _globalStart;
+            _currentSize = _currentStop - _currentStart;
+            _minSize = MINS_SIZE;
+        }
 
         public bool CanMoveRight => _currentStop < _globalStop;
         public bool CanMoveLeft => _currentStart > _globalStart;
@@ -61,23 +73,14 @@ namespace StochasticUi.ViewModel.Scale
             _currentStop = center + newSize / 2;
         }
 
-        public void Init(long globalStart, long globalStop, long minSize)
-        {
-            _globalStart = globalStart;
-            _globalStop = globalStop;
-            _currentStart = _globalStart;
-            _currentStop = _globalStop;
-            _globalSize = _globalStop - _globalStart;
-            _currentSize = _currentStop - _currentStart;
-            _minSize = minSize;
-        }
-
+        
         public ScaleInfo GetCurrentScaleInfo()
         {
             return new ScaleInfo()
             {
                 CurrentStart = _currentStart,
-                CurrentStop = _currentStop
+                CurrentStop = _currentStop,
+                CurrentWidth = _currentStop-_currentStart
             };
         }
     }

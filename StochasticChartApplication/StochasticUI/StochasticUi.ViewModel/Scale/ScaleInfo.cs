@@ -4,5 +4,6 @@
     {
         public long CurrentStart { get; set; }
         public long CurrentStop { get; set; }
+        public long CurrentWidth { get; set; }
     }
 }

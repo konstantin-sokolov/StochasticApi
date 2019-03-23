@@ -23,7 +23,8 @@ namespace StochasticUI.ViewModel.UnitTests
             ScaleInfo expectedScaleInfo = new ScaleInfo()
             {
                 CurrentStart = 0,
-                CurrentStop = 100
+                CurrentStop = 100,
+                CurrentWidth = 100
             };
 
             scaler.CanMoveLeft.Should().Be(false);
