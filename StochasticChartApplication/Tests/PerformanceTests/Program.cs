@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Running;
+﻿using System;
+using BenchmarkDotNet.Running;
 
 namespace PerformanceTests
 {
@@ -7,11 +8,16 @@ namespace PerformanceTests
 
         static void Main(string[] args)
         {
-            BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+            //BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
             //BenchmarkRunner.Run<ImageRenderPerfTest>();
             //BenchmarkRunner.Run<MmfGenerationPerfTest>();
             //BenchmarkRunner.Run<DensitiesCalculationPerfTest>();
             //BenchmarkRunner.Run<MmfReadPerfTest>();
+            var temp = new DensitiesCalculationPerfTest();
+            temp.Setup();
+            Console.WriteLine("Press button");
+            Console.ReadLine();
+            temp.GetDensityInfo();
         } 
     }
 }

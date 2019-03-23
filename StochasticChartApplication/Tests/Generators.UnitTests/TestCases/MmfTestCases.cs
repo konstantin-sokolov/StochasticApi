@@ -13,26 +13,26 @@ namespace Generators.UnitTests.TestCases
         {
             get
             {
-                yield return new TestCaseData(7, new Wrapper{Params = new object[] {"Normal.bin"}})
+                yield return new TestCaseData(7L, new Wrapper{Params = new object[] {"Normal.bin"}})
                 {
                     TestName = "Odd  collection size"
                 };
 
-                yield return new TestCaseData(8, new Wrapper())
+                yield return new TestCaseData(8L, new Wrapper())
                 {
                     TestName = "Null parameters"
                 };
 
-                yield return new TestCaseData(8, new Wrapper {Params = new object[] { "Normal.bin", "And something else" }})
+                yield return new TestCaseData(8L, new Wrapper {Params = new object[] { "Normal.bin", "And something else" }})
                 {
                     TestName = "Not single parameter"
                 };
 
-                yield return new TestCaseData(8, new Wrapper { Params = new object[] { "" }})
+                yield return new TestCaseData(8L, new Wrapper { Params = new object[] { "" }})
                 {
                     TestName = "Empty file path"
                 };
-                yield return new TestCaseData(8, new Wrapper { Params = new object[] { null }})
+                yield return new TestCaseData(8L, new Wrapper { Params = new object[] { null }})
                 {
                     TestName = "Null file path"
                 };

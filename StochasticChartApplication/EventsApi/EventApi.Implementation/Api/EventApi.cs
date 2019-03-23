@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 using EventsApi.Contracts;
@@ -39,8 +40,13 @@ namespace EventApi.Implementation.Api
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            var startIndex = GetStartIndex(startTick);
-            var stopIndex = GetStopIndex(stopTick);
+            var searchStartIndexTask = GetStartIndexAsync(startTick);
+            var searchStopIndexTask = GetStopIndexAsync(stopTick);
+            Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+
+            var startIndex = searchStartIndexTask.Result;
+            var stopIndex = searchStopIndexTask.Result;
+
             var result = _dataProvider.GetEventsBetween(startIndex, stopIndex);
             stopWatch.Stop();
             _logger.Info($"EventApi: Got {stopIndex - startIndex} events in {stopWatch.ElapsedMilliseconds}ms");

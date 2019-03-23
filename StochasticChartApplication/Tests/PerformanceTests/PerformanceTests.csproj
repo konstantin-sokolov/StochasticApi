@@ -191,7 +191,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MmfReadPerfTest.cs" />
-    <Compile Include="ViewModelPerfTest.cs" />
     <Compile Include="ImageRenderPerfTest.cs" />
     <Compile Include="DensitiesCalculationPerfTest.cs" />
     <Compile Include="MmfGenerationPerfTest.cs" />

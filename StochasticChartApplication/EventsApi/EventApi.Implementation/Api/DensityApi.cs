@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 using EventsApi.Contracts;
@@ -35,8 +36,13 @@ namespace EventApi.Implementation.Api
             do
             {
                 var endTick = Math.Min(startTick + groupInterval, stopTick);
-                var startIndex = GetStartIndex(startTick);
-                var stopIndex = GetStopIndex(endTick);
+
+                var searchStartIndexTask = GetStartIndexAsync(startTick);
+                var searchStopIndexTask = GetStopIndexAsync(endTick);
+                Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+
+                var startIndex = searchStartIndexTask.Result;
+                var stopIndex = searchStopIndexTask.Result;
                 if (stopIndex < startIndex)
                 {
                     startTick = endTick + 1;

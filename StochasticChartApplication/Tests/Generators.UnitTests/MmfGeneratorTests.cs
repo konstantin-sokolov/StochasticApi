@@ -26,9 +26,9 @@ namespace Generators.UnitTests
         }
 
         [TestMethod]
-        [TestCase(900)]
-        [TestCase(1000*1000)]
-        [TestCase(10000)]
+        [TestCase(900L)]
+        [TestCase(1000L*1000)]
+        [TestCase(10000L)]
         public void GenerateDataProvider_CheckCreatedProvider(long size)
         {
             var fileName = Path.Combine(Directory.GetCurrentDirectory(), "GeneratorUnitTest", _fixture.Create<string>() + ".bin");

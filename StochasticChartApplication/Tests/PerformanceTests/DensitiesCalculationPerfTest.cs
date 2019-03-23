@@ -42,7 +42,7 @@ namespace PerformanceTests
         }
 
         [Benchmark]
-        public void RenderData()
+        public void GetDensityInfo()
         {
             _densityApi.GetDensityInfo(_globalStart, _globalStop, (_globalStop - _globalStart) / RequestedSize);
         }

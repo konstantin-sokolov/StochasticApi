@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 
@@ -18,56 +19,61 @@ namespace EventApi.Implementation.Api
             _globalStartTick = _dataProvider.GetGlobalStartTick();
             _globalStopTick = _dataProvider.GetGlobalStopTick();
         }
-      
-        protected long GetStartIndex(long startTick)
+
+        protected Task<long> GetStartIndexAsync(long startTick)
         {
             if (startTick < _globalStartTick)
-                return 0;
+                return Task.FromResult(0L);
 
-            var compareResult = FindNearest(startTick, true, out var nearestIndex);
-            switch (compareResult)
+            return Task.Run(() =>
             {
-                case 0:
-                    return nearestIndex;
-                case -1:
+                var compareResult = FindNearest(startTick, true, out var nearestIndex);
+                switch (compareResult)
                 {
-                    //nearest on the left side check next stop after nearest for intersection 
-                    var leftStopEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
-                    return leftStopEvent.Ticks < startTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
+                    case 0:
+                        return nearestIndex;
+                    case -1:
+                    {
+                        //nearest on the left side check next stop after nearest for intersection 
+                        var leftStopEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
+                        return leftStopEvent.Ticks < startTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
+                    }
+                    default:
+                    {
+                        //nearest on the right side 
+                        var rightStopEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
+                        return rightStopEvent.Ticks > startTick ? nearestIndex - 2 : nearestIndex; //it can't be first, because of check in start of searching
+                    }
                 }
-                default:
-                {
-                    //nearest on the right side 
-                    var rightStopEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
-                    return rightStopEvent.Ticks > startTick ? nearestIndex - 2 : nearestIndex; //it can't be first, because of check in start of searching
-                }
-            }
+            });
         }
-
-        protected long GetStopIndex(long stopTick)
+        protected Task<long> GetStopIndexAsync(long stopTick)
         {
             if (stopTick > _globalStopTick)
-                return _globalEventsCount - 1;
+                return Task.FromResult(_globalEventsCount - 1);
 
-            var compareResult = FindNearest(stopTick, false, out var nearestIndex);
-            switch (compareResult)
+            return Task.Run(() =>
             {
-                case 0:
-                    return nearestIndex;
-                case -1:
-                {
-                    //nearest on the left side check next stop after nearest for intersection 
-                    var rightStartEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
-                    return rightStartEvent.Ticks < stopTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
-                }
-                default:
-                {
-                    //nearest on the right side 
-                    var leftStartEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
-                    return leftStartEvent.Ticks > stopTick ? nearestIndex - 2 : nearestIndex;
-                }
-            }
 
+                var compareResult = FindNearest(stopTick, false, out var nearestIndex);
+                switch (compareResult)
+                {
+                    case 0:
+                        return nearestIndex;
+                    case -1:
+                    {
+                        //nearest on the left side check next stop after nearest for intersection 
+                        var rightStartEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
+                        return rightStartEvent.Ticks < stopTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
+                    }
+                    default:
+                    {
+                        //nearest on the right side 
+                        var leftStartEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
+                        return leftStartEvent.Ticks > stopTick ? nearestIndex - 2 : nearestIndex;
+                    }
+                }
+            });
         }
 
         private int FindNearest(long ticks, bool even, out long index)
