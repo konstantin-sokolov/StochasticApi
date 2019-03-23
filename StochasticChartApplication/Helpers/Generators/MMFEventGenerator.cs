@@ -36,29 +36,29 @@ namespace Generators
             var filePath = (string) parameters[0];
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentException("Wrong value for filepath. It can't be null or empty");
-            return filePath;
-        }
 
-        private void WriteDataToFile(string filePath, int entitySize, long collectionSize)
-        {
             var directory = Path.GetDirectoryName(filePath);
             if (string.IsNullOrWhiteSpace(directory))
             {
                 directory = Path.Combine(Directory.GetCurrentDirectory(), "MmfDataProviders");
                 filePath = Path.Combine(directory, filePath);
             }
-
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
             if (File.Exists(filePath))
                 File.Delete(filePath);
 
+            return filePath;
+        }
+
+        private void WriteDataToFile(string filePath, int entitySize, long collectionSize)
+        {
             var fileSize = entitySize * collectionSize;
             int currentPercent = 0;
             using (var fs = new FileStream(filePath, FileMode.CreateNew))
             using (var mmf = MemoryMappedFile.CreateFromFile(fs, "Events", fileSize, MemoryMappedFileAccess.ReadWrite, HandleInheritability.None, false))
             {
-                var batchCount = collectionSize / BATCH_SIZE;
+                var batchCount = Math.Ceiling((double)collectionSize / BATCH_SIZE);
 
                 for (int b = 0; b < batchCount; b++)
                 {

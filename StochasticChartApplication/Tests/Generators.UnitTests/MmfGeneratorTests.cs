@@ -26,23 +26,25 @@ namespace Generators.UnitTests
         }
 
         [TestMethod]
-        public void GenerateDataProvider_CheckCreatedProvider()
+        [TestCase(900)]
+        [TestCase(1000*1000)]
+        [TestCase(10000)]
+        public void GenerateDataProvider_CheckCreatedProvider(long size)
         {
-            var size = 1000;
             var fileName = Path.Combine(Directory.GetCurrentDirectory(), "GeneratorUnitTest", _fixture.Create<string>() + ".bin");
-            if (File.Exists(fileName))
-                File.Delete(fileName);
             var generatorFactory = new GeneratorFactory();
             var generator = generatorFactory.GetGenerator(ProviderType.MemoryMappedFile);
             var dataProvider = generator.GenerateDataProviderAsync(size, new []{ fileName }).Result;
             _generatedFiles.Add(fileName);
             CheckDataProvider(dataProvider, size);
+            dataProvider.Dispose();
             Assert.That(File.Exists(fileName));
         }
 
         [TestMethod]
         [TestCaseSource(typeof(MmfTestCases), nameof(MmfTestCases.BadArgumentsTestCase))]
         //for me it was surprise that i can't pass array of objects in testcases. There was error about mismatch of method arguments
+        //So i had to add wrapper class
         public void GenerateDataProvider_ShouldBeException_BadArgumentsTestCase(long collectionSize, Wrapper wrapper)
         {
             var generatorFactory = new GeneratorFactory();

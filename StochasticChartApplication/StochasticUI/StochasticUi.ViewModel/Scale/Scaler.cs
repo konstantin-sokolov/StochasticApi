@@ -51,6 +51,8 @@ namespace StochasticUi.ViewModel.Scale
         {
             if (decrease && _currentSize == _minSize)
                 return;
+            if (!decrease && _currentSize == _globalSize)
+                return;
 
             var newSize = decrease
                 ? Math.Max((long) (_currentSize * SCALE_STEP_RATIO), _minSize)
