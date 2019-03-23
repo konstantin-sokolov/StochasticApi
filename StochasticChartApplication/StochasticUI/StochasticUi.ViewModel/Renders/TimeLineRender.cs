@@ -10,7 +10,7 @@ namespace StochasticUi.ViewModel.Renders
 {
     public static class TimeLineRender
     {
-        private const int TIME_LINE_MARGIN = 30;
+        private const int TIME_LINE_MARGIN = 40;
         private const int TEXT_WIDTH = 80;
         private const int TIMELINE_HEIGHT = 50;
 
@@ -22,17 +22,13 @@ namespace StochasticUi.ViewModel.Renders
 
         private static void DrawTimeLine(Graphics g, int imageWidth, long startTicks, long ticksCounts)
         {
-            for (var i = TIME_LINE_MARGIN; i < imageWidth - TIME_LINE_MARGIN; i += TEXT_WIDTH)
+            for (var x = TIME_LINE_MARGIN; x < imageWidth; x += TEXT_WIDTH)
             {
-                var x = i;
-                if (x > 0)
-                {
-                    var font = new Font(FontFamily.GenericSerif, 14, FontStyle.Bold, GraphicsUnit.Point);
-                    var positionInTicks = (double) x * ticksCounts / imageWidth + startTicks;
-                    var timeText = GetTime((long) positionInTicks, ticksCounts);
-                    var textWidth = g.MeasureString(timeText, font).Width;
-                    g.DrawString(timeText, font, new SolidBrush(Color.Red), new PointF(x - textWidth, 0));
-                }
+                var font = new Font(FontFamily.GenericSerif, 14, FontStyle.Bold, GraphicsUnit.Point);
+                var positionInTicks = (double) x * ticksCounts / imageWidth + startTicks;
+                var timeText = GetTime((long) positionInTicks, ticksCounts);
+                var textWidth = g.MeasureString(timeText, font).Width;
+                g.DrawString(timeText, font, new SolidBrush(Color.Red), new PointF(x - textWidth/2, 0));
             }
         }
 
