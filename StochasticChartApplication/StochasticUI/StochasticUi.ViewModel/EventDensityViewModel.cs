@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -7,6 +8,7 @@ using System.Windows.Threading;
 using EventsApi.Contracts;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
+using StochasticUi.ViewModel.Renders;
 using StochasticUi.ViewModel.Scale;
 
 namespace StochasticUi.ViewModel
@@ -17,8 +19,12 @@ namespace StochasticUi.ViewModel
 
         private readonly IScaler _scaler;
         private readonly IDensityApi _densityApi;
-        private ImageSource _imageSource;
+        private ImageSource _chartImageSource;
+        private ImageSource _timeLineImageSource;
+
         private readonly Dispatcher _uiDispatcher;
+        private double _currentWidth;
+
         public EventDensityViewModel(IScaler scaler, IDensityApi densityApi)
         {
             _scaler = scaler;
@@ -26,7 +32,7 @@ namespace StochasticUi.ViewModel
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             MoveLeftCommand = new DelegateCommand(MoveLeft);
             MoveRightCommand = new DelegateCommand(MoveRight);
-            RecalculateImage();
+            RecalculateWholeImage();
         }
 
         private void MoveRight()
@@ -34,7 +40,7 @@ namespace StochasticUi.ViewModel
             _scaler.MoveRight();
             OnPropertyChanged(nameof(CanMoveRight));
             OnPropertyChanged(nameof(CanMoveLeft));
-            RecalculateImage();
+            RecalculateWholeImage();
         }
 
         private void MoveLeft()
@@ -42,8 +48,41 @@ namespace StochasticUi.ViewModel
             _scaler.MoveLeft();
             OnPropertyChanged(nameof(CanMoveRight));
             OnPropertyChanged(nameof(CanMoveLeft));
-            RecalculateImage();
+            RecalculateWholeImage();
         }
+
+        private void RecalculateWholeImage()
+        {
+            RecalculateChartImage();
+            RecalculateTimeLineImage();
+        }
+
+        private void RecalculateChartImage()
+        {
+            Task.Run(() =>
+            {
+                var scaleInfo = _scaler.GetCurrentScaleInfo();
+                var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
+                var densities = _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval);
+
+                if (!densities.Any())
+                    return ChartRender.RenderEmptyData();
+
+                var maxDensity = densities.Max(t => t.EventsCount);
+                return ChartRender.RenderData(densities.Select(d => (double)d.EventsCount / maxDensity).ToArray());
+            }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = imageSource.Result; })));
+        }
+        private void RecalculateTimeLineImage()
+        {
+            if (_currentWidth < 50)
+                return;
+            Task.Run(() =>
+            {
+                var scaleInfo = _scaler.GetCurrentScaleInfo();
+                return TimeLineRender.RenderData(_currentWidth, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
+            }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { TimeLineImageSource = imageSource.Result; })));
+        }
+
 
         #region public bindings
 
@@ -60,27 +99,30 @@ namespace StochasticUi.ViewModel
             _scaler.Scale(centerRelativePos, decrease);
             OnPropertyChanged(nameof(CanMoveLeft));
             OnPropertyChanged(nameof(CanMoveRight));
-            RecalculateImage();
+            RecalculateWholeImage();
+        }
+        public void ChangeWidth(double newSizeWidth)
+        {
+            if (Math.Abs(newSizeWidth - _currentWidth)<10)
+                return;
+
+            _currentWidth = newSizeWidth;
+            RecalculateTimeLineImage();
         }
 
-        public ImageSource ImageSource
+        public ImageSource ChartImageSource
         {
-            get => _imageSource;
-            set => SetProperty(ref _imageSource, value);
+            get => _chartImageSource;
+            set => SetProperty(ref _chartImageSource, value);
+        }
+        public ImageSource TimeLineImageSource
+        {
+            get => _timeLineImageSource;
+            set => SetProperty(ref _timeLineImageSource, value);
         }
 
         #endregion public bindings
 
-        private void RecalculateImage()
-        {
-            Task.Run(() =>
-            {
-                var scaleInfo = _scaler.GetCurrentScaleInfo();
-                var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
-                var densities = _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval);
-                var maxDensity = densities.Max(t => t.Count);
-                return StatisticRender.RenderData(densities.Select(d => (double)d.Count/maxDensity).ToArray());
-            }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { ImageSource = imageSource.Result; })));
-        }
+       
     }
 }

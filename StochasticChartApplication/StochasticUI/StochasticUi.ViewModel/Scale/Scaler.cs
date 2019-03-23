@@ -6,7 +6,7 @@ namespace StochasticUi.ViewModel.Scale
     {
         public const double MOVE_STEP_RATIO = 0.05;
         public const double SCALE_STEP_RATIO = 0.6;
-        public const long  MIN_SIZE = 10000;
+        public const long  MIN_SIZE = 30*TimeSpan.TicksPerMillisecond;
 
         private readonly long _globalStart;
         private readonly long _globalStop;
@@ -49,6 +49,9 @@ namespace StochasticUi.ViewModel.Scale
 
         public void Scale(double relativePos, bool decrease)
         {
+            if (decrease && _currentSize == _minSize)
+                return;
+
             var newSize = decrease
                 ? Math.Max((long) (_currentSize * SCALE_STEP_RATIO), _minSize)
                 : Math.Min((long) (_currentSize / SCALE_STEP_RATIO), _globalSize);

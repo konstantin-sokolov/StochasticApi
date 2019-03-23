@@ -40,7 +40,7 @@ namespace PerformanceTests
         //[Benchmark]
         //public void GenerateDataSet()
         //{
-        //    var fileName = Path.Combine(Directory.GetCurrentDirectory(), "MmfGeneratedFiles", $"TestGenerator{_generatedFiles.Count}.bin");
+        //    var fileName = Path.Combine(Directory.GetCurrentDirectory(), "MmfGeneratedFiles", $"TestGenerator{_generatedFiles.EventsCount}.bin");
         //    var dataProvider = _generator.GenerateDataProviderAsync(N, new object[] { fileName }).Result;
         //    dataProvider.Dispose();
         //    _generatedFiles.Add(fileName);

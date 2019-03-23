@@ -2,6 +2,7 @@
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using StochasticUi.ViewModel;
+using StochasticUi.ViewModel.Renders;
 
 namespace PerformanceTests
 {
