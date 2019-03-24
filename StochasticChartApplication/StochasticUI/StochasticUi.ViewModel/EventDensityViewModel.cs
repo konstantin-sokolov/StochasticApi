@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,7 +15,7 @@ namespace StochasticUi.ViewModel
 {
     public class EventDensityViewModel : BindableBase, IDisposable
     {
-        private const int IMAGE_WIDTH = 400;
+        private const int IMAGE_WIDTH = 800;
 
         private readonly IScaler _scaler;
         private readonly IDensityApi _densityApi;
@@ -23,7 +25,7 @@ namespace StochasticUi.ViewModel
         private readonly Dispatcher _uiDispatcher;
         private double _currentWidth;
         private Task _swapTask;
-        private object _timeLineLocker = new object();
+        private CancellationTokenSource _calcDensityTokenSource;
 
         public EventDensityViewModel(IScaler scaler, IDensityApi densityApi)
         {
@@ -59,14 +61,28 @@ namespace StochasticUi.ViewModel
 
         private void RecalculateChartImage()
         {
+            _calcDensityTokenSource?.Cancel();
+
+            _calcDensityTokenSource = new CancellationTokenSource();
+            var token = _calcDensityTokenSource.Token;
             Task.Run(() =>
             {
                 var scaleInfo = _scaler.GetCurrentScaleInfo();
                 var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
-                var densities = _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval);
-
+                var densities = _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
+                if (densities == null)
+                    return null;
                 return ChartRender.RenderData(densities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
-            }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = imageSource.Result; })));
+            }, token).ContinueWith(imageSource =>
+            {
+                if (imageSource.Result == null)
+                {
+                    Trace.WriteLine("Task Canceled");
+                    return null;
+                }
+
+                return _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = imageSource.Result; }));
+            }, token);
         }
 
         private void RecalculateTimeLineImage()

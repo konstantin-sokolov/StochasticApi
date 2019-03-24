@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
@@ -20,14 +21,17 @@ namespace EventApi.Implementation.Api
             _globalStopTick = _dataProvider.GetGlobalStopTick();
         }
 
-        protected Task<long> GetStartIndexAsync(long startTick, long? minIndex=null, long? maxIndex =null)
+        protected Task<long> GetStartIndexAsync(long startTick, long? minIndex=null, long? maxIndex =null, CancellationToken ctn = default(CancellationToken))
         {
             if (startTick < _globalStartTick)
                 return Task.FromResult(0L);
 
             return Task.Run(() =>
             {
-                var compareResult = FindNearest(startTick, true, out var nearestIndex, minIndex,maxIndex);
+                var compareResult = FindNearest(startTick, true, out var nearestIndex, minIndex,maxIndex, ctn);
+                if (ctn.IsCancellationRequested)
+                    return 0;
+
                 switch (compareResult)
                 {
                     case 0:
@@ -45,17 +49,19 @@ namespace EventApi.Implementation.Api
                         return rightStopEvent.Ticks > startTick ? nearestIndex - 2 : nearestIndex; //it can't be first, because of check in start of searching
                     }
                 }
-            });
+            },ctn);
         }
-        protected Task<long> GetStopIndexAsync(long stopTick, long? minIndex=null, long? maxIndex=null)
+        protected Task<long> GetStopIndexAsync(long stopTick, long? minIndex=null, long? maxIndex=null, CancellationToken ctn = default(CancellationToken))
         {
             if (stopTick > _globalStopTick)
                 return Task.FromResult(_globalEventsCount - 1);
 
             return Task.Run(() =>
             {
+                var compareResult = FindNearest(stopTick, false, out var nearestIndex, minIndex, maxIndex, ctn);
+                if (ctn.IsCancellationRequested)
+                    return 0;
 
-                var compareResult = FindNearest(stopTick, false, out var nearestIndex);
                 switch (compareResult)
                 {
                     case 0:
@@ -73,10 +79,10 @@ namespace EventApi.Implementation.Api
                         return leftStartEvent.Ticks > stopTick ? nearestIndex - 2 : nearestIndex;
                     }
                 }
-            });
+            }, ctn);
         }
 
-        private int FindNearest(long ticks, bool even, out long index, long? minIndex = null, long? maxIndex = null)
+        private int FindNearest(long ticks, bool even, out long index, long? minIndex = null, long? maxIndex = null, CancellationToken ctn = default(CancellationToken))
         {
             long first = minIndex / 2 ?? 0;
             long last = (maxIndex - 1) / 2 ?? _globalEventsCount / 2 - 1;
@@ -84,6 +90,12 @@ namespace EventApi.Implementation.Api
             int compareResult;
             do
             {
+                if (ctn.IsCancellationRequested)
+                {
+                    index = 0;
+                    return 0;
+                }
+
                 mid = first + (last - first) / 2;
                 var globalIndex = even ? 2 * mid : 2 * mid + 1;
                 var item = GetEventAtIndex(globalIndex);

@@ -50,7 +50,6 @@ namespace StochasticUi.ViewModel.Scale
 
         public void Scale(double relativePos, bool decrease)
         {
-            Trace.WriteLine("Scale");
             if (decrease && _currentSize == _minSize)
                 return;
             if (!decrease && _currentSize == _globalSize)

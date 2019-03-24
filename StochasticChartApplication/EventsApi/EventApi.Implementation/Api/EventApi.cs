@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
@@ -17,7 +18,7 @@ namespace EventApi.Implementation.Api
             _logger = logger;
         }
 
-        public IEnumerable<PayloadEvent> GetEvents(long startTick, long stopTick)
+        public IEnumerable<PayloadEvent> GetEvents(long startTick, long stopTick,CancellationToken ctn= default(CancellationToken))
         {
             _logger.Info($"EventApi: Requested events between: {startTick}-{stopTick}");
             if (_globalEventsCount == 0)
@@ -40,9 +41,11 @@ namespace EventApi.Implementation.Api
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            var searchStartIndexTask = GetStartIndexAsync(startTick);
-            var searchStopIndexTask = GetStopIndexAsync(stopTick);
+            var searchStartIndexTask = GetStartIndexAsync(startTick, ctn: ctn);
+            var searchStopIndexTask = GetStopIndexAsync(stopTick, ctn: ctn);
             Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+
+            ctn.ThrowIfCancellationRequested();
 
             var startIndex = searchStartIndexTask.Result;
             var stopIndex = searchStopIndexTask.Result;
