@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,7 +11,7 @@ using StochasticUi.ViewModel.Scale;
 
 namespace StochasticUi.ViewModel
 {
-    public class EventDensityViewModel : BindableBase,IDisposable
+    public class EventDensityViewModel : BindableBase, IDisposable
     {
         private const int IMAGE_WIDTH = 400;
 
@@ -24,6 +22,8 @@ namespace StochasticUi.ViewModel
 
         private readonly Dispatcher _uiDispatcher;
         private double _currentWidth;
+        private Task _swapTask;
+        private object _timeLineLocker = new object();
 
         public EventDensityViewModel(IScaler scaler, IDensityApi densityApi)
         {
@@ -68,10 +68,12 @@ namespace StochasticUi.ViewModel
                 return ChartRender.RenderData(densities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
             }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = imageSource.Result; })));
         }
+
         private void RecalculateTimeLineImage()
         {
             if (_currentWidth < 50)
                 return;
+
             Task.Run(() =>
             {
                 var scaleInfo = _scaler.GetCurrentScaleInfo();
@@ -79,6 +81,17 @@ namespace StochasticUi.ViewModel
             }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { TimeLineImageSource = imageSource.Result; })));
         }
 
+        private void ScheduleTimeLineRedraw()
+        {
+            if (_swapTask != null)
+                return;
+
+            _swapTask = Task.Run(() => { Task.Delay(300); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
+            {
+                _swapTask = null;
+                RecalculateTimeLineImage();
+            })));
+        }
 
         #region public bindings
 
@@ -97,13 +110,14 @@ namespace StochasticUi.ViewModel
             OnPropertyChanged(nameof(CanMoveRight));
             RecalculateWholeImage();
         }
+
         public void ChangeWidth(double newSizeWidth)
         {
-            if (Math.Abs(newSizeWidth - _currentWidth)<10)
+            if (Math.Abs(newSizeWidth - _currentWidth) < 10)
                 return;
 
             _currentWidth = newSizeWidth;
-            RecalculateTimeLineImage();
+            ScheduleTimeLineRedraw();
         }
 
         public ImageSource ChartImageSource
@@ -111,6 +125,7 @@ namespace StochasticUi.ViewModel
             get => _chartImageSource;
             set => SetProperty(ref _chartImageSource, value);
         }
+
         public ImageSource TimeLineImageSource
         {
             get => _timeLineImageSource;
@@ -118,7 +133,6 @@ namespace StochasticUi.ViewModel
         }
 
         #endregion public bindings
-
 
         public void Dispose()
         {
