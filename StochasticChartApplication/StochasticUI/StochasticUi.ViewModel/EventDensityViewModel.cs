@@ -18,7 +18,8 @@ namespace StochasticUi.ViewModel
     public class EventDensityViewModel : BindableBase, IDisposable
     {
         private const int IMAGE_WIDTH = 400;
-
+        private const int DEFAULT_TIMEOUT = 1000;
+        ReaderWriterLock rwl = new ReaderWriterLock();
         private readonly IScaler _scaler;
         private readonly IDensityApi _densityApi;
         private ImageSource _chartImageSource;
@@ -44,9 +45,10 @@ namespace StochasticUi.ViewModel
 
         private List<DensityInfo> GetVisibleInfos(ScaleInfo scaleInfo)
         {
-            if (_currentDensityInfo == null || !_currentDensityInfo.Any())
+            var infos = GetCloneOfCurrent();
+            if (infos == null || !infos.Any())
                 return new List<DensityInfo>(0);
-            return _currentDensityInfo.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
+            return infos.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
         }
         private CancellationToken CancelPreviousTasksAndGetNewToken()
         {
@@ -62,12 +64,13 @@ namespace StochasticUi.ViewModel
             var token = CancelPreviousTasksAndGetNewToken();
 
             DrawCurrentImage(token, correlationId);
+            RecalculateTimeLineImage();
 
             Task.Run(() =>
             {
                 var scaleInfo = _scaler.GetCurrentScaleInfo();
                 var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
-                _currentDensityInfo = getFunc(scaleInfo, groupInterval, token);
+                WriteToResource(getFunc(scaleInfo, groupInterval, token));
             }, token).ContinueWith(task => DrawCurrentImage(token, correlationId), token);
         }
 
@@ -119,6 +122,50 @@ namespace StochasticUi.ViewModel
         }
         #endregion timeline
 
+        #region  read|write sync
+
+        List<DensityInfo> GetCloneOfCurrent()
+        {
+            try
+            {
+                rwl.AcquireReaderLock(DEFAULT_TIMEOUT);
+                try
+                {
+                    return _currentDensityInfo?.ToList();
+                }
+                finally
+                {
+                    rwl.ReleaseReaderLock();
+                }
+            }
+            catch (ApplicationException)
+            {
+                //todo log
+                return null;
+            }
+        }
+
+        void WriteToResource(List<DensityInfo> infos)
+        {
+            try
+            {
+                rwl.AcquireWriterLock(DEFAULT_TIMEOUT);
+                try
+                {
+                    _currentDensityInfo = infos;
+                }
+                finally
+                {
+                    rwl.ReleaseWriterLock();
+                }
+            }
+            catch (ApplicationException)
+            {
+               //todo log it
+            }
+        }
+
+        #endregion
         #region drawing current data
 
         private void DrawCurrentImage(CancellationToken token, Guid correlationId)
@@ -127,13 +174,14 @@ namespace StochasticUi.ViewModel
         }
         private Task<ImageSource> PrepareImageFromCurrentData()
         {
-            if (_currentDensityInfo == null)
+            var infos = GetCloneOfCurrent();
+            if (infos == null)
                 return Task.FromResult((ImageSource)null);
 
             return Task.Run(() =>
             {
                 var scaleInfo = _scaler.GetCurrentScaleInfo();
-                var visibleDensities = _currentDensityInfo.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
+                var visibleDensities = infos.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
 
                 return ChartRender.RenderData(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
             });
