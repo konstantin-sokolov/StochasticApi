@@ -5,23 +5,40 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
+using NLog;
 
 namespace Generators
 {
     class MmfEventGenerator : BaseEventGenerator, IEventGenerator
     {
+        private readonly ILogger _logger;
         public const long BATCH_SIZE = 10000;
+
+        public MmfEventGenerator(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         public async Task<IDataProvider> GenerateDataProviderAsync(long collectionSize, object[] parameters)
         {
             if (collectionSize % 2 != 0)
+            {
+                _logger.Error("MmfEventGenerator: Collection size should be even number");
                 throw new ArgumentException("Collection size should be even number", nameof(collectionSize));
+            }
 
             var filePath = ParseAndValidateArgs(parameters);
-            var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
-            await Task.Run(() => { WriteDataToFile(filePath, entitySize, collectionSize); }).ConfigureAwait(false);
-
-            return new MMFDataProvider(filePath, entitySize);
+            try
+            {
+                var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
+                await Task.Run(() => { WriteDataToFile(filePath, entitySize, collectionSize); }).ConfigureAwait(false);
+                return new MMFDataProvider(filePath, entitySize);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+                throw;
+            }
         }
 
         public event Action<int> EventGenerateProgressChanged;
@@ -29,13 +46,25 @@ namespace Generators
         private string ParseAndValidateArgs(object[] parameters)
         {
             if (parameters == null)
-                throw new ArgumentException("Wrong parameters for MemoryMappedGenerator. Parameters shouldn't be null");
+            {
+                var message = "Wrong parameters for MemoryMappedGenerator. Parameters shouldn't be null";
+                _logger.Error(message);
+                throw new ArgumentException(message);
+            }
 
             if (parameters.Length != 1)
-                throw new ArgumentException("Wrong count of parameters for MemoryMappedGenerator. There should be 1 parameter - filepath");
+            {
+                var message = "Wrong count of parameters for MemoryMappedGenerator. There should be 1 parameter - filepath";
+                _logger.Error(message);
+                throw new ArgumentException(message);
+            }
             var filePath = (string) parameters[0];
             if (string.IsNullOrEmpty(filePath))
-                throw new ArgumentException("Wrong value for filepath. It can't be null or empty");
+            {
+                var message = "Wrong value for filepath. It can't be null or empty";
+                _logger.Error(message);
+                throw new ArgumentException(message);
+            }
 
             var directory = Path.GetDirectoryName(filePath);
             if (string.IsNullOrWhiteSpace(directory))

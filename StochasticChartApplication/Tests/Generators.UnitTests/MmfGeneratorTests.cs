@@ -30,7 +30,7 @@ namespace Generators.UnitTests
         {
             var size = 1000L;
             var fileName = Path.Combine(Directory.GetCurrentDirectory(), "GeneratorUnitTest", _fixture.Create<string>() + ".bin");
-            var generatorFactory = new GeneratorFactory();
+            var generatorFactory = new GeneratorFactory(_logger);
             var generator = generatorFactory.GetGenerator(ProviderType.MemoryMappedFile);
             var dataProvider = generator.GenerateDataProviderAsync(size, new []{ fileName }).Result;
             _generatedFiles.Add(fileName);
@@ -43,7 +43,7 @@ namespace Generators.UnitTests
         [TestCaseSource(typeof(MmfTestCases), nameof(MmfTestCases.BadArgumentsTestCase))]
         public void GenerateDataProvider_ShouldBeException_BadArgumentsTestCase(long collectionSize, Wrapper wrapper)
         {
-            var generatorFactory = new GeneratorFactory();
+            var generatorFactory = new GeneratorFactory(_logger);
             var generator = generatorFactory.GetGenerator(ProviderType.MemoryMappedFile);
             CheckInvalidParameters(generator, collectionSize, wrapper.Params);
         }

@@ -15,7 +15,7 @@ namespace StochasticChartApplication
         private readonly GeneratorFactory _generatorFactory;
         private readonly DensityViewModelFactory _viewModelFactory;
         private readonly long _defaultArrayDataSize = 1000 * 1000 * 10;
-        private readonly long _defaultMmfDataSize = 1000L * 1000L * 1000L;
+        private readonly long _defaultMmfDataSize = 100L * 1000L * 1000L;
         private readonly Dispatcher _uiDispatcher;
         private BaseGeneratorArgsViewModel _activeArgsViewModel;
         private readonly ArrayGeneratorArgsViewModel _arrayGeneratorArgsViewModel;

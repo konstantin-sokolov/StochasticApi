@@ -4,6 +4,8 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using EventApi.Implementation.DataProviders;
 using Generators;
+using Moq;
+using NLog;
 
 namespace PerformanceTests
 {
@@ -13,6 +15,12 @@ namespace PerformanceTests
     {
         private readonly List<string> _generatedFiles = new List<string>();
         private IEventGenerator _generator;
+        private readonly ILogger _logger;
+
+        public MmfGenerationPerfTest()
+        {
+            _logger = new Mock<ILogger>().Object;
+        }
 
         [Params(1000L*1000)]
         public int N;
@@ -20,7 +28,7 @@ namespace PerformanceTests
         [GlobalSetup]
         public void Setup()
         {
-            GeneratorFactory factory = new GeneratorFactory();
+            GeneratorFactory factory = new GeneratorFactory(_logger);
             _generator = factory.GetGenerator(ProviderType.MemoryMappedFile);
         }
 

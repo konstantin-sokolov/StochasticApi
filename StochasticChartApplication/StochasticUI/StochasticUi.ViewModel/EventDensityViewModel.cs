@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +10,7 @@ using EventApi.Models;
 using EventsApi.Contracts;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
+using NLog;
 using StochasticUi.ViewModel.Renders;
 using StochasticUi.ViewModel.Scale;
 
@@ -22,6 +22,7 @@ namespace StochasticUi.ViewModel
 
         private readonly IScaler _scaler;
         private readonly IDensityApi _densityApi;
+        private readonly ILogger _logger;
         private ImageSource _chartImageSource;
         private ImageSource _timeLineImageSource;
 
@@ -29,14 +30,14 @@ namespace StochasticUi.ViewModel
         private double _currentWidth;
         private Task _swapTask;
         private CancellationTokenSource _calcDensityTokenSource;
-
         private List<DensityInfo> _currentDensityInfo;
         private Guid _currentInfoCorrelationId;
- 
-        public EventDensityViewModel(IScaler scaler, IDensityApi densityApi)
+
+        public EventDensityViewModel(IScaler scaler, IDensityApi densityApi, ILogger logger)
         {
             _scaler = scaler;
             _densityApi = densityApi;
+            _logger = logger;
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             MoveLeftCommand = new DelegateCommand(MoveLeft);
             MoveRightCommand = new DelegateCommand(MoveRight);
@@ -45,6 +46,7 @@ namespace StochasticUi.ViewModel
 
         private void MoveRight()
         {
+            _logger.Info("Move chart right");
             _scaler.MoveRight();
             OnPropertyChanged(nameof(CanMoveRight));
             OnPropertyChanged(nameof(CanMoveLeft));
@@ -53,6 +55,7 @@ namespace StochasticUi.ViewModel
 
         private void MoveLeft()
         {
+            _logger.Info("Move chart left");
             _scaler.MoveLeft();
             OnPropertyChanged(nameof(CanMoveRight));
             OnPropertyChanged(nameof(CanMoveLeft));
@@ -61,12 +64,14 @@ namespace StochasticUi.ViewModel
 
         private void RecalculateWholeImage()
         {
+            _logger.Info("RecalculateChartImage");
             RecalculateChartImage();
             RecalculateTimeLineImage();
         }
 
         private void RecalculateChartImage()
         {
+            _logger.Info("RecalculateChartImage");
             _calcDensityTokenSource?.Cancel();
 
             _calcDensityTokenSource = new CancellationTokenSource();
@@ -88,6 +93,7 @@ namespace StochasticUi.ViewModel
 
         private void RecalculateTimeLineImage()
         {
+            _logger.Info("RecalculateChartImage");
             if (_currentWidth < 50)
                 return;
 
@@ -114,10 +120,17 @@ namespace StochasticUi.ViewModel
         {
             return Task.Run(() =>
             {
-                var scaleInfo = _scaler.GetCurrentScaleInfo();
-                var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
-                return _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
-
+                try
+                {
+                    var scaleInfo = _scaler.GetCurrentScaleInfo();
+                    var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
+                    return _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error($"Error getting data from api:{e.Message}");
+                    return null;
+                }
             }, token);
         }
 
@@ -129,7 +142,7 @@ namespace StochasticUi.ViewModel
         private Task<ImageSource> PrepareImageFromCurrentData()
         {
             if (_currentDensityInfo == null)
-                return Task.FromResult((ImageSource)null);
+                return Task.FromResult((ImageSource) null);
 
             return Task.Run(() =>
             {
@@ -140,7 +153,7 @@ namespace StochasticUi.ViewModel
             });
         }
 
-        private void RenderImage(ImageSource source,Guid correlationToken)
+        private void RenderImage(ImageSource source, Guid correlationToken)
         {
             if (correlationToken != _currentInfoCorrelationId)
                 return;

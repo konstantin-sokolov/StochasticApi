@@ -36,7 +36,7 @@ namespace PerformanceTests
             //var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
             //_provider = new MMFDataProvider(@"C:\Repos\StochasticChartApplication\Tests\PerformanceTests\bin\Release\MmfGeneratedFiles\LargeData.bin", entitySize);
 
-            var factory = new GeneratorFactory();
+            var factory = new GeneratorFactory(_logger);
             var generator = factory.GetGenerator(ProviderType.MemoryMappedFile);
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "MmfGeneratedFiles", "LargeData.bin");
             _provider = generator.GenerateDataProviderAsync(100L * 1000L * 1000L, new object[] { filePath }).Result;

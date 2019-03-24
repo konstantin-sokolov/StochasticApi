@@ -24,49 +24,56 @@ namespace EventApi.Implementation.Api
             var result = new List<DensityInfo>();
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-
-            do
+            try
             {
-                if (ctn.IsCancellationRequested)
-                    return null;
-
-                var endTick = Math.Min(startTick + groupInterval, stopTick);
-
-                var searchStartIndexTask = GetStartIndexAsync(startTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
-                var searchStopIndexTask = GetStopIndexAsync(endTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
-                Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
-
-                if (ctn.IsCancellationRequested)
-                    return null;
-
-                var startIndex = searchStartIndexTask.Result;
-                var stopIndex = searchStopIndexTask.Result;
-                if (stopIndex < startIndex)
+                do
                 {
-                    startTick = endTick + 1;
+                    if (ctn.IsCancellationRequested)
+                        return null;
+
+                    var endTick = Math.Min(startTick + groupInterval, stopTick);
+
+                    var searchStartIndexTask = GetStartIndexAsync(startTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
+                    var searchStopIndexTask = GetStopIndexAsync(endTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
+                    Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+
+                    if (ctn.IsCancellationRequested)
+                        return null;
+
+                    var startIndex = searchStartIndexTask.Result;
+                    var stopIndex = searchStopIndexTask.Result;
+                    if (stopIndex < startIndex)
+                    {
+                        startTick = endTick + 1;
+                        searchStartIndex = stopIndex + 1;
+                        continue;
+                    }
+
+                    //additional get - think about remove it in future
+                    var startEvent = _dataProvider.GetEventAtIndex(startIndex);
+                    var stopEvent = _dataProvider.GetEventAtIndex(stopIndex);
+                    result.Add(new DensityInfo()
+                    {
+                        EventsCount = stopIndex - startIndex + 1,
+                        Start = startEvent.Ticks,
+                        Stop = stopEvent.Ticks,
+                        StartIndex = startIndex,
+                        StopIndex = stopIndex
+                    });
+
+                    startTick = Math.Max(stopEvent.Ticks, endTick) + 1;
                     searchStartIndex = stopIndex + 1;
-                    continue;
-                }
+                } while (startTick < stopTick);
 
-                //additional get - think about remove it in future
-                var startEvent = _dataProvider.GetEventAtIndex(startIndex);
-                var stopEvent = _dataProvider.GetEventAtIndex(stopIndex);
-                result.Add(new DensityInfo()
-                {
-                    EventsCount = stopIndex - startIndex + 1,
-                    Start = startEvent.Ticks,
-                    Stop = stopEvent.Ticks,
-                    StartIndex = startIndex,
-                    StopIndex = stopIndex
-                });
-
-                startTick = Math.Max(stopEvent.Ticks, endTick) + 1;
-                searchStartIndex = stopIndex + 1;
-            } while (startTick < stopTick);
-
-            stopWatch.Stop();
-            _logger.Info($"DensityApi: GetDensityInfo - got {result.Count} densities in {stopWatch.ElapsedMilliseconds}ms");
-            return result;
+                stopWatch.Stop();
+                _logger.Info($"DensityApi: GetDensityInfo - got {result.Count} densities in {stopWatch.ElapsedMilliseconds}ms");
+                return result;
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+                throw;
+            }
         }
 
         private List<DensityInfo> SplitSingleDensityInfo(DensityInfo info, long groupInterval, CancellationToken ctn = default(CancellationToken))
@@ -95,6 +102,11 @@ namespace EventApi.Implementation.Api
 
             return GetDensityInfo(startTick, stopTick, 0, _globalEventsCount - 1, groupInterval, ctn);
         }
+
+
+        #region only for performance test 
+
+        // it will be the new version api - with better performance
 
         public List<DensityInfo> SplitDensityInfo(List<DensityInfo> currentInfo, long start, long stop, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
@@ -165,5 +177,7 @@ namespace EventApi.Implementation.Api
 
             return GetDensityInfo(startTick, stopTick, 0, firstStartIndex - 1, groupInterval, ctn);
         }
+
+        #endregion
     }
 }
