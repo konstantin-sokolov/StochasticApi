@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using EventApi.Models;
 using EventsApi.Contracts;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
@@ -15,7 +18,7 @@ namespace StochasticUi.ViewModel
 {
     public class EventDensityViewModel : BindableBase, IDisposable
     {
-        private const int IMAGE_WIDTH = 800;
+        private const int IMAGE_WIDTH = 400;
 
         private readonly IScaler _scaler;
         private readonly IDensityApi _densityApi;
@@ -27,6 +30,9 @@ namespace StochasticUi.ViewModel
         private Task _swapTask;
         private CancellationTokenSource _calcDensityTokenSource;
 
+        private List<DensityInfo> _currentDensityInfo;
+        private Guid _currentInfoCorrelationId;
+ 
         public EventDensityViewModel(IScaler scaler, IDensityApi densityApi)
         {
             _scaler = scaler;
@@ -65,23 +71,18 @@ namespace StochasticUi.ViewModel
 
             _calcDensityTokenSource = new CancellationTokenSource();
             var token = _calcDensityTokenSource.Token;
-            Task.Run(() =>
-            {
-                var scaleInfo = _scaler.GetCurrentScaleInfo();
-                var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
-                var densities = _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
-                if (densities == null)
-                    return null;
-                return ChartRender.RenderData(densities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
-            }, token).ContinueWith(imageSource =>
-            {
-                if (imageSource.Result == null)
-                {
-                    Trace.WriteLine("Task Canceled");
-                    return null;
-                }
+            var correlationId = Guid.NewGuid();
+            _currentInfoCorrelationId = correlationId;
 
-                return _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = imageSource.Result; }));
+            DrawCurrentImage(token, correlationId);
+
+            GetDataFromApi(token).ContinueWith(data =>
+            {
+                if (_currentInfoCorrelationId != correlationId)
+                    return;
+
+                _currentDensityInfo = data.Result;
+                DrawCurrentImage(token, correlationId);
             }, token);
         }
 
@@ -107,6 +108,43 @@ namespace StochasticUi.ViewModel
                 _swapTask = null;
                 RecalculateTimeLineImage();
             })));
+        }
+
+        private Task<List<DensityInfo>> GetDataFromApi(CancellationToken token)
+        {
+            return Task.Run(() =>
+            {
+                var scaleInfo = _scaler.GetCurrentScaleInfo();
+                var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
+                return _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
+
+            }, token);
+        }
+
+        private void DrawCurrentImage(CancellationToken token, Guid correlationId)
+        {
+            PrepareImageFromCurrentData().ContinueWith(image => RenderImage(image.Result, correlationId), token);
+        }
+
+        private Task<ImageSource> PrepareImageFromCurrentData()
+        {
+            if (_currentDensityInfo == null)
+                return Task.FromResult((ImageSource)null);
+
+            return Task.Run(() =>
+            {
+                var scaleInfo = _scaler.GetCurrentScaleInfo();
+                var visibleDensities = _currentDensityInfo.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
+
+                return ChartRender.RenderData(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
+            });
+        }
+
+        private void RenderImage(ImageSource source,Guid correlationToken)
+        {
+            if (correlationToken != _currentInfoCorrelationId)
+                return;
+            _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = source; }));
         }
 
         #region public bindings
