@@ -8,5 +8,7 @@ namespace EventsApi.Contracts
     {
          List<DensityInfo> GetDensityInfo(long start, long stop, long groupInterval);
          List<DensityInfo> SplitDensityInfo(List<DensityInfo> currentInfo, long start, long stop, long groupInterval);
+         List<DensityInfo> GetInfoForRightSide(long lastStopTick, long lastStopIndex, long stopTick, long groupInterval);
+         List<DensityInfo> GetInfoForLeftSide(long firstStartTick, long firstStartIndex, long startTick, long groupInterval);
     }
 }
