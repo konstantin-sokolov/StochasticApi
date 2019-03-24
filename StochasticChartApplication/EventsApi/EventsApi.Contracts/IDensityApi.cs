@@ -6,6 +6,7 @@ namespace EventsApi.Contracts
 {
     public interface IDensityApi:IDisposable
     {
-         IEnumerable<DensityInfo> GetDensityInfo(long start, long stop, long groupInterval);
+         List<DensityInfo> GetDensityInfo(long start, long stop, long groupInterval);
+         List<DensityInfo> SplitDensityInfo(List<DensityInfo> currentInfo, long start, long stop, long groupInterval);
     }
 }

@@ -20,14 +20,14 @@ namespace EventApi.Implementation.Api
             _globalStopTick = _dataProvider.GetGlobalStopTick();
         }
 
-        protected Task<long> GetStartIndexAsync(long startTick)
+        protected Task<long> GetStartIndexAsync(long startTick, long? minIndex=null, long? maxIndex =null)
         {
             if (startTick < _globalStartTick)
                 return Task.FromResult(0L);
 
             return Task.Run(() =>
             {
-                var compareResult = FindNearest(startTick, true, out var nearestIndex);
+                var compareResult = FindNearest(startTick, true, out var nearestIndex, minIndex,maxIndex);
                 switch (compareResult)
                 {
                     case 0:
@@ -47,7 +47,7 @@ namespace EventApi.Implementation.Api
                 }
             });
         }
-        protected Task<long> GetStopIndexAsync(long stopTick)
+        protected Task<long> GetStopIndexAsync(long stopTick, long? minIndex=null, long? maxIndex=null)
         {
             if (stopTick > _globalStopTick)
                 return Task.FromResult(_globalEventsCount - 1);
@@ -76,10 +76,10 @@ namespace EventApi.Implementation.Api
             });
         }
 
-        private int FindNearest(long ticks, bool even, out long index)
+        private int FindNearest(long ticks, bool even, out long index, long? minIndex = null, long? maxIndex = null)
         {
-            long first = 0;
-            long last = _globalEventsCount / 2 - 1;
+            long first = minIndex / 2 ?? 0;
+            long last = (maxIndex - 1) / 2 ?? _globalEventsCount / 2 - 1;
             long mid;
             int compareResult;
             do

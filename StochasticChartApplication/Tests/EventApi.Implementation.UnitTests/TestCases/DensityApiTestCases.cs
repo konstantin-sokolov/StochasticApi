@@ -17,20 +17,25 @@ namespace EventApi.Implementation.UnitTests.TestCases
                     {
                         EventsCount = 2,
                         Start = 50,
-                        Stop = 70
+                        Stop = 70,
+                        StartIndex = 0,
+                        StopIndex = 1,
                     },
                     new DensityInfo()
                     {
                         EventsCount = 2,
                         Start = 100,
-                        Stop = 120
-                    }
-                    ,
+                        Stop = 120,
+                        StartIndex = 2,
+                        StopIndex = 3,
+                    },
                     new DensityInfo()
                     {
                         EventsCount = 2,
                         Start = 150,
-                        Stop = 200
+                        Stop = 200,
+                        StartIndex = 4,
+                        StopIndex = 5
                     }
                 })
                 {
@@ -43,13 +48,17 @@ namespace EventApi.Implementation.UnitTests.TestCases
                     {
                         EventsCount = 4,
                         Start = 50,
-                        Stop = 120
+                        Stop = 120,
+                        StartIndex = 0,
+                        StopIndex = 3
                     },
                     new DensityInfo()
                     {
                         EventsCount = 2,
                         Start = 150,
-                        Stop = 200
+                        Stop = 200,
+                        StartIndex = 4,
+                        StopIndex = 5
                     }
                 })
                 {
@@ -62,13 +71,17 @@ namespace EventApi.Implementation.UnitTests.TestCases
                     {
                         EventsCount = 2,
                         Start = 50,
-                        Stop = 70
+                        Stop = 70,
+                        StartIndex = 0,
+                        StopIndex = 1
                     },
                     new DensityInfo()
                     {
                         EventsCount = 2,
                         Start = 100,
-                        Stop = 120
+                        Stop = 120,
+                        StartIndex = 2,
+                        StopIndex = 3
                     }
                 })
                 {
@@ -81,7 +94,9 @@ namespace EventApi.Implementation.UnitTests.TestCases
                     {
                         EventsCount = 6,
                         Start = 50,
-                        Stop = 200
+                        Stop = 200,
+                        StartIndex = 0,
+                        StopIndex = 5
                     }
                 })
                 {
@@ -93,7 +108,9 @@ namespace EventApi.Implementation.UnitTests.TestCases
                     {
                         EventsCount = 6,
                         Start = 50,
-                        Stop = 200
+                        Stop = 200,
+                        StartIndex = 0,
+                        StopIndex = 5
                     }
                 })
                 {
