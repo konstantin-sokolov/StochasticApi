@@ -8,5 +8,17 @@
 
         public long StartIndex { get; set; }
         public long StopIndex { get; set; }
+
+        public DensityInfo Clone()
+        {
+            return new DensityInfo
+            {
+                Start = Start,
+                Stop = Stop,
+                EventsCount = EventsCount,
+                StartIndex = StartIndex,
+                StopIndex = StopIndex,
+            };
+        }
     }
 }

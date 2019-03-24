@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +39,36 @@ namespace StochasticUi.ViewModel
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             MoveLeftCommand = new DelegateCommand(MoveLeft);
             MoveRightCommand = new DelegateCommand(MoveRight);
-            RecalculateWholeImage();
+            FirstDrawChart();
+        }
+
+        private List<DensityInfo> GetVisibleInfos(ScaleInfo scaleInfo)
+        {
+            if (_currentDensityInfo == null || !_currentDensityInfo.Any())
+                return new List<DensityInfo>(0);
+            return _currentDensityInfo.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
+        }
+        private CancellationToken CancelPreviousTasksAndGetNewToken()
+        {
+            _calcDensityTokenSource?.Cancel();
+
+            _calcDensityTokenSource = new CancellationTokenSource();
+            return _calcDensityTokenSource.Token;
+        }
+        private void GetDataAndRedraw(Func<ScaleInfo, long, CancellationToken, List<DensityInfo>> getFunc)
+        {
+            var correlationId = Guid.NewGuid();
+            _currentInfoCorrelationId = correlationId;
+            var token = CancelPreviousTasksAndGetNewToken();
+
+            DrawCurrentImage(token, correlationId);
+
+            Task.Run(() =>
+            {
+                var scaleInfo = _scaler.GetCurrentScaleInfo();
+                var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
+                _currentDensityInfo = getFunc(scaleInfo, groupInterval, token);
+            }, token).ContinueWith(task => DrawCurrentImage(token, correlationId), token);
         }
 
         private void MoveRight()
@@ -48,44 +76,24 @@ namespace StochasticUi.ViewModel
             _scaler.MoveRight();
             OnPropertyChanged(nameof(CanMoveRight));
             OnPropertyChanged(nameof(CanMoveLeft));
-            RecalculateWholeImage();
-        }
 
+            GetDataAndRedraw((scInfo, groupInterval, token) => _densityApi.MoveToRight(GetVisibleInfos(scInfo), scInfo.CurrentStart, scInfo.CurrentStop, groupInterval, token));
+        }
         private void MoveLeft()
         {
             _scaler.MoveLeft();
             OnPropertyChanged(nameof(CanMoveRight));
             OnPropertyChanged(nameof(CanMoveLeft));
-            RecalculateWholeImage();
+
+            GetDataAndRedraw((scInfo, groupInterval, token) => _densityApi.MoveToLeft(GetVisibleInfos(scInfo), scInfo.CurrentStart, scInfo.CurrentStop, groupInterval, token));
         }
 
-        private void RecalculateWholeImage()
+        private void FirstDrawChart()
         {
-            RecalculateChartImage();
-            RecalculateTimeLineImage();
+            GetDataAndRedraw((scaleInfo, groupInterval, token) => _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token));
         }
 
-        private void RecalculateChartImage()
-        {
-            _calcDensityTokenSource?.Cancel();
-
-            _calcDensityTokenSource = new CancellationTokenSource();
-            var token = _calcDensityTokenSource.Token;
-            var correlationId = Guid.NewGuid();
-            _currentInfoCorrelationId = correlationId;
-
-            DrawCurrentImage(token, correlationId);
-
-            GetDataFromApi(token).ContinueWith(data =>
-            {
-                if (_currentInfoCorrelationId != correlationId)
-                    return;
-
-                _currentDensityInfo = data.Result;
-                DrawCurrentImage(token, correlationId);
-            }, token);
-        }
-
+        #region timeline
         private void RecalculateTimeLineImage()
         {
             if (_currentWidth < 50)
@@ -103,29 +111,20 @@ namespace StochasticUi.ViewModel
             if (_swapTask != null)
                 return;
 
-            _swapTask = Task.Run(() => { Task.Delay(300); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
+            _swapTask = Task.Run(async () => { await Task.Delay(300); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
             {
                 _swapTask = null;
                 RecalculateTimeLineImage();
             })));
         }
+        #endregion timeline
 
-        private Task<List<DensityInfo>> GetDataFromApi(CancellationToken token)
-        {
-            return Task.Run(() =>
-            {
-                var scaleInfo = _scaler.GetCurrentScaleInfo();
-                var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
-                return _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
-
-            }, token);
-        }
+        #region drawing current data
 
         private void DrawCurrentImage(CancellationToken token, Guid correlationId)
         {
             PrepareImageFromCurrentData().ContinueWith(image => RenderImage(image.Result, correlationId), token);
         }
-
         private Task<ImageSource> PrepareImageFromCurrentData()
         {
             if (_currentDensityInfo == null)
@@ -139,13 +138,14 @@ namespace StochasticUi.ViewModel
                 return ChartRender.RenderData(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
             });
         }
-
         private void RenderImage(ImageSource source,Guid correlationToken)
         {
             if (correlationToken != _currentInfoCorrelationId)
                 return;
             _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = source; }));
         }
+
+        #endregion drawing current data
 
         #region public bindings
 
@@ -162,7 +162,11 @@ namespace StochasticUi.ViewModel
             _scaler.Scale(centerRelativePos, decrease);
             OnPropertyChanged(nameof(CanMoveLeft));
             OnPropertyChanged(nameof(CanMoveRight));
-            RecalculateWholeImage();
+
+            if (decrease)
+                GetDataAndRedraw((scaleInfo, groupInterval, token) => _densityApi.ScaleInto(GetVisibleInfos(scaleInfo), scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token));
+            else
+                GetDataAndRedraw((scaleInfo, groupInterval, token) => _densityApi.ScaleOut(GetVisibleInfos(scaleInfo), scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token));
         }
 
         public void ChangeWidth(double newSizeWidth)
