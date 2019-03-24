@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Generators.UnitTests
 {
-    public class BaseGeneratorTest  
+    public abstract class BaseGeneratorTest  
     {
         protected void CheckDataProvider(IDataProvider provider, long expectedSize)
         {

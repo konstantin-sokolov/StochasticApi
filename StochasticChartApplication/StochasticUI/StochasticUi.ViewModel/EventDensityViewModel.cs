@@ -103,7 +103,7 @@ namespace StochasticUi.ViewModel
             if (_swapTask != null)
                 return;
 
-            _swapTask = Task.Run(() => { Task.Delay(300); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
+            _swapTask = Task.Run(async () => { await Task.Delay(300); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
             {
                 _swapTask = null;
                 RecalculateTimeLineImage();

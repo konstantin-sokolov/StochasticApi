@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using BenchmarkDotNet.Attributes;
@@ -8,6 +9,7 @@ using EventApi.Implementation.Api;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 using EventsApi.Contracts;
+using Generators;
 using Moq;
 
 namespace PerformanceTests
@@ -29,8 +31,15 @@ namespace PerformanceTests
         {
             var mockLogger = new Mock<NLog.ILogger>();
             _logger = mockLogger.Object;
-            var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
-            _provider = new MMFDataProvider(@"C:\Repos\StochasticChartApplication\Tests\PerformanceTests\bin\Release\MmfGeneratedFiles\LargeData.bin", entitySize);
+
+            //you can use once generated file but till you hasn't it you should generate it everyTime
+            //var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
+            //_provider = new MMFDataProvider(@"C:\Repos\StochasticChartApplication\Tests\PerformanceTests\bin\Release\MmfGeneratedFiles\LargeData.bin", entitySize);
+
+            var factory = new GeneratorFactory();
+            var generator = factory.GetGenerator(ProviderType.MemoryMappedFile);
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "MmfGeneratedFiles", "LargeData.bin");
+            _provider = generator.GenerateDataProviderAsync(100L * 1000L * 1000L, new object[] { filePath }).Result;
         }
 
         [IterationSetup]
