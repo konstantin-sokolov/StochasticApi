@@ -238,12 +238,12 @@ namespace EventApi.Implementation.Api
             if (visibleInfos.Count == 0)
                 return GetDensityInfo(start, stop, groupInterval, ctn);
 
-            var leftTask = Task.Run(() =>
+            var rightTask = Task.Run(() =>
             {
                 var lastEvent = visibleInfos[visibleInfos.Count - 1];
                 return GetInfoForRightSide(lastEvent.Stop, lastEvent.StopIndex, stop, groupInterval, ctn);
             }, ctn);
-            var rightTask = Task.Run(() =>
+            var leftTask = Task.Run(() =>
             {
                 var firstEvent = visibleInfos[0];
                 return GetInfoForLeftSide(firstEvent.Start, firstEvent.StartIndex, start, groupInterval, ctn);
