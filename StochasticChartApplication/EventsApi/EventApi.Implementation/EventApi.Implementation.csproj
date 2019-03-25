@@ -56,6 +56,7 @@
     <Compile Include="DataProviders\IDataProvider.cs" />
     <Compile Include="DataProviders\MMFDataProvider.cs" />
     <Compile Include="DataProviders\ProviderType.cs" />
+    <Compile Include="Helpers\SearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

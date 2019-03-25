@@ -21,7 +21,7 @@ namespace EventApi.Implementation.Api
 
         public Task<IEnumerable<PayloadEvent>> GetEventsAsync(long startTick, long stopTick, CancellationToken ctn = default(CancellationToken))
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 _logger.Info($"EventApi: Requested events between: {startTick}-{stopTick}");
                 try
@@ -48,14 +48,14 @@ namespace EventApi.Implementation.Api
                     stopWatch.Start();
                     var searchStartIndexTask = GetStartIndexAsync(startTick, ctn: ctn);
                     var searchStopIndexTask = GetStopIndexAsync(stopTick, ctn: ctn);
-                    Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+                    await Task.WhenAll(searchStartIndexTask, searchStopIndexTask);
 
                     ctn.ThrowIfCancellationRequested();
 
                     var startIndex = searchStartIndexTask.Result;
                     var stopIndex = searchStopIndexTask.Result;
 
-                    var result = _dataProvider.GetEventsBetween(startIndex, stopIndex);
+                    var result = await _dataProvider.GetEventsBetweenAsync(startIndex, stopIndex);
                     stopWatch.Stop();
                     _logger.Info($"EventApi: Got {stopIndex - startIndex} events in {stopWatch.ElapsedMilliseconds}ms");
                     return result;

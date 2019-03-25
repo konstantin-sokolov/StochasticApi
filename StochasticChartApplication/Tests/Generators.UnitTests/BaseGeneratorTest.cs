@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 using FluentAssertions;
@@ -18,14 +19,14 @@ namespace Generators.UnitTests
             _logger = loggerMock.Object;
         }
 
-        protected void CheckDataProvider(IDataProvider provider, long expectedSize)
+        protected async Task CheckDataProvider(IDataProvider provider, long expectedSize)
         {
             var actualSize = provider.GetGlobalEventsCount();
             actualSize.Should().Be(expectedSize);
             var currentTicks = long.MinValue;
             for (int i = 0; i < expectedSize; i++)
             {
-                var currentEvent = provider.GetEventAtIndex(i);
+                var currentEvent = await provider.GetEventAtIndexAsync(i);
                 currentEvent.Ticks.Should().BeGreaterThan(currentTicks);
                 currentTicks = currentEvent.Ticks;
                 currentEvent.EventType.Should().Be(i % 2 == 0 ? EventType.start : EventType.stop);

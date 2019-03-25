@@ -24,7 +24,7 @@ namespace StochasticUi.ViewModel.Renders
         {
             return Task.Run(() =>
             {
-                if (!densities.Any())
+                if (densities == null || !densities.Any())
                     return RenderEmptyData();
 
                 return BaseRender.RenderData(IMAGE_WIDTH, IMAGE_HEIGHT, g => RenderDensityChart(g, densities, startTicks, ticksCount, token));

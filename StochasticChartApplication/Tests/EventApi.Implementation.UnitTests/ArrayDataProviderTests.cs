@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoFixture;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
@@ -20,14 +21,14 @@ namespace EventApi.Implementation.UnitTests
         }
 
         [Test]
-        public void GetEventAtIndex_SimpleValue_ReturnedEquals()
+        public async Task GetEventAtIndex_SimpleValue_ReturnedEquals()
         {
             var arraySize = 6;
             var array = _fixture.CreateMany<PayloadEvent>(arraySize).ToArray();
             var dataProvider = new ArrayDataProvider(array);
             for (int i = 0; i < arraySize; i++)
             {
-                var value = dataProvider.GetEventAtIndex(i);
+                var value = await dataProvider.GetEventAtIndexAsync(i);
                 value.Should().BeEquivalentTo(array[i]);
             }
         }
@@ -40,26 +41,27 @@ namespace EventApi.Implementation.UnitTests
             var arraySize = 6;
             var array = _fixture.CreateMany<PayloadEvent>(arraySize).ToArray();
             var dataProvider = new ArrayDataProvider(array);
-            Assert.Throws<IndexOutOfRangeException>(() => dataProvider.GetEventAtIndex(index));
+            Assert.Throws<IndexOutOfRangeException>(async () => await dataProvider.GetEventAtIndexAsync(index));
         }
 
         [Test]
-        public void GetEventsBetween_GetAllElements_ArrayShouldBeEquivalentToSource()
+        public async Task GetEventsBetween_GetAllElements_ArrayShouldBeEquivalentToSource()
         {
             var arraySize = 6;
             var array = _fixture.CreateMany<PayloadEvent>(arraySize).ToArray();
             var dataProvider = new ArrayDataProvider(array);
-            var actual = dataProvider.GetEventsBetween(0, 5);
+            var actual = await dataProvider.GetEventsBetweenAsync(0, 5);
             actual.Should().BeEquivalentTo(array);
         }
 
         [Test]
-        public void GetEventsBetween_GetSubsequence_EquivalentElements()
+        public async Task GetEventsBetween_GetSubsequence_EquivalentElements()
         {
             var arraySize = 6;
             var array = _fixture.CreateMany<PayloadEvent>(arraySize).ToArray();
             var dataProvider = new ArrayDataProvider(array);
-            var actual = dataProvider.GetEventsBetween(2, 3).ToArray();
+            var events = await dataProvider.GetEventsBetweenAsync(2, 3);
+            var actual = events.ToArray();
             actual.Length.Should().Be(2);
             actual[0].Should().BeEquivalentTo(array[2]);
             actual[1].Should().BeEquivalentTo(array[3]);

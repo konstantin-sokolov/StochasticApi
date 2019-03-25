@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using AutoFixture;
 using EventApi.Implementation.DataProviders;
 using Generators.UnitTests.TestCases;
@@ -23,7 +24,7 @@ namespace Generators.UnitTests
         }
 
         [TestMethod]
-        public void GenerateDataProvider_CheckCreatedProvider()
+        public async Task GenerateDataProvider_CheckCreatedProvider()
         {
             var size = 1000L;
             var fileName = Path.Combine(Directory.GetCurrentDirectory(), "GeneratorUnitTest", _fixture.Create<string>() + ".bin");
@@ -31,7 +32,7 @@ namespace Generators.UnitTests
             var generator = generatorFactory.GetGenerator(ProviderType.MemoryMappedFile);
             var dataProvider = generator.GenerateDataProviderAsync(size, new []{ fileName }).Result;
             _generatedFiles.Add(fileName);
-            CheckDataProvider(dataProvider, size);
+            await CheckDataProvider(dataProvider, size);
             dataProvider.Dispose();
             Assert.That(File.Exists(fileName));
         }

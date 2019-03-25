@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -10,17 +11,15 @@ namespace Generators.UnitTests
     [TestClass]
     public class ArrayGeneratorTests:BaseGeneratorTest
     {
-       
-
         [TestMethod]
-        public void GenerateDataProvider_CheckCreatedProvider()
+        public async Task GenerateDataProvider_CheckCreatedProvider()
         {
             var size = 1000;
         
             var generatorFactory = new GeneratorFactory(_logger);
             var generator = generatorFactory.GetGenerator(ProviderType.Array);
             var dataProvider = generator.GenerateDataProviderAsync(size, null).Result;
-            CheckDataProvider(dataProvider, size);
+            await CheckDataProvider(dataProvider, size);
         }
 
         [TestMethod]

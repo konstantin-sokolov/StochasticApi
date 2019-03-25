@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
-using EventApi.Models;
+using EventApi.Implementation.Helpers;
 
 namespace EventApi.Implementation.Api
 {
@@ -21,66 +21,61 @@ namespace EventApi.Implementation.Api
             _globalStopTick = _dataProvider.GetGlobalStopTick();
         }
 
-        protected Task<long> GetStartIndexAsync(long startTick, long? minIndex=null, long? maxIndex =null, CancellationToken ctn = default(CancellationToken))
+        protected async Task<long> GetStartIndexAsync(long startTick, long? minIndex = null, long? maxIndex = null, CancellationToken ctn = default(CancellationToken))
         {
             if (startTick < _globalStartTick)
-                return Task.FromResult(0L);
+                return 0L;
 
-            return Task.Run(() =>
+            var searchResult = await FindNearestAsync(startTick, true, minIndex, maxIndex, ctn);
+            ctn.ThrowIfCancellationRequested();
+
+            switch (searchResult.CompareResult)
             {
-                var compareResult = FindNearest(startTick, true, out var nearestIndex, minIndex,maxIndex, ctn);
-                ctn.ThrowIfCancellationRequested();
-
-                switch (compareResult)
+                case 0:
+                    return searchResult.FoundIndex;
+                case -1:
                 {
-                    case 0:
-                        return nearestIndex;
-                    case -1:
-                    {
-                        //nearest on the left side check next stop after nearest for intersection 
-                        var leftStopEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
-                        return leftStopEvent.Ticks < startTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
-                    }
-                    default:
-                    {
-                        //nearest on the right side 
-                        var rightStopEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
-                        return rightStopEvent.Ticks > startTick ? nearestIndex - 2 : nearestIndex; //it can't be first, because of check in start of searching
-                    }
+                    //nearest on the left side check next stop after nearest for intersection 
+                    var leftStopEvent = await _dataProvider.GetEventAtIndexAsync(searchResult.FoundIndex + 1);
+                    return leftStopEvent.Ticks < startTick ? searchResult.FoundIndex + 2 : searchResult.FoundIndex; //it can't be last, because of check in start of searching
                 }
-            },ctn);
+                default:
+                {
+                    //nearest on the right side 
+                    var rightStopEvent = await _dataProvider.GetEventAtIndexAsync(searchResult.FoundIndex - 1);
+                    return rightStopEvent.Ticks > startTick ? searchResult.FoundIndex - 2 : searchResult.FoundIndex; //it can't be first, because of check in start of searching
+                }
+            }
         }
-        protected Task<long> GetStopIndexAsync(long stopTick, long? minIndex=null, long? maxIndex=null, CancellationToken ctn = default(CancellationToken))
+
+        protected async Task<long> GetStopIndexAsync(long stopTick, long? minIndex = null, long? maxIndex = null, CancellationToken ctn = default(CancellationToken))
         {
             if (stopTick > _globalStopTick)
-                return Task.FromResult(_globalEventsCount - 1);
+                return _globalEventsCount - 1;
 
-            return Task.Run(() =>
+            var searchResult = await FindNearestAsync(stopTick, false, minIndex, maxIndex, ctn);
+            ctn.ThrowIfCancellationRequested();
+
+            switch (searchResult.CompareResult)
             {
-                var compareResult = FindNearest(stopTick, false, out var nearestIndex, minIndex, maxIndex, ctn);
-               ctn.ThrowIfCancellationRequested();
-
-                switch (compareResult)
+                case 0:
+                    return searchResult.FoundIndex;
+                case -1:
                 {
-                    case 0:
-                        return nearestIndex;
-                    case -1:
-                    {
-                        //nearest on the left side check next stop after nearest for intersection 
-                        var rightStartEvent = _dataProvider.GetEventAtIndex(nearestIndex + 1);
-                        return rightStartEvent.Ticks < stopTick ? nearestIndex + 2 : nearestIndex; //it can't be last, because of check in start of searching
-                    }
-                    default:
-                    {
-                        //nearest on the right side 
-                        var leftStartEvent = _dataProvider.GetEventAtIndex(nearestIndex - 1);
-                        return leftStartEvent.Ticks > stopTick ? nearestIndex - 2 : nearestIndex;
-                    }
+                    //nearest on the left side check next stop after nearest for intersection 
+                    var rightStartEvent = await _dataProvider.GetEventAtIndexAsync(searchResult.FoundIndex + 1);
+                    return rightStartEvent.Ticks < stopTick ? searchResult.FoundIndex + 2 : searchResult.FoundIndex; //it can't be last, because of check in start of searching
                 }
-            }, ctn);
+                default:
+                {
+                    //nearest on the right side 
+                    var leftStartEvent = await _dataProvider.GetEventAtIndexAsync(searchResult.FoundIndex - 1);
+                    return leftStartEvent.Ticks > stopTick ? searchResult.FoundIndex - 2 : searchResult.FoundIndex;
+                }
+            }
         }
 
-        private int FindNearest(long ticks, bool even, out long index, long? minIndex = null, long? maxIndex = null, CancellationToken ctn = default(CancellationToken))
+        private async Task<SearchResult> FindNearestAsync(long ticks, bool even, long? minIndex = null, long? maxIndex = null, CancellationToken ctn = default(CancellationToken))
         {
             long first = minIndex / 2 ?? 0;
             long last = (maxIndex - 1) / 2 ?? _globalEventsCount / 2 - 1;
@@ -92,11 +87,10 @@ namespace EventApi.Implementation.Api
 
                 mid = first + (last - first) / 2;
                 var globalIndex = even ? 2 * mid : 2 * mid + 1;
-                var item = GetEventAtIndex(globalIndex);
+                var item = await _dataProvider.GetEventAtIndexAsync(globalIndex);
                 if (item.Ticks == ticks)
                 {
-                    index = globalIndex;
-                    return 0;
+                    return new SearchResult(0, globalIndex);
                 }
 
                 if (item.Ticks < ticks)
@@ -111,13 +105,7 @@ namespace EventApi.Implementation.Api
                 }
             } while (first <= last);
 
-            index = even ? 2 * mid : 2 * mid + 1;
-            return compareResult;
-        }
-
-        protected PayloadEvent GetEventAtIndex(long index)
-        {
-            return _dataProvider.GetEventAtIndex(index);
+            return new SearchResult(compareResult, even ? 2 * mid : 2 * mid + 1);
         }
 
         public void Dispose()

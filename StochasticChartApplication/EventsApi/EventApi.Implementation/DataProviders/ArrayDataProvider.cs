@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using EventApi.Models;
 
 namespace EventApi.Implementation.DataProviders
@@ -13,18 +14,24 @@ namespace EventApi.Implementation.DataProviders
             _array = array ?? throw new ArgumentNullException(nameof(array));
         }
 
-        public PayloadEvent GetEventAtIndex(long index)
-        {
-            return _array[index];
-        }
-
-        public IEnumerable<PayloadEvent> GetEventsBetween(long startIndex, long stopIndex)
+        private IEnumerable<PayloadEvent> GetEventsBetween(long startIndex, long stopIndex)
         {
             if (stopIndex <= startIndex)
                 return new PayloadEvent[0];
+
             var result = new PayloadEvent[stopIndex - startIndex + 1];
             Array.Copy(_array, startIndex, result, 0, stopIndex - startIndex + 1);
             return result;
+        }
+
+        public Task<PayloadEvent> GetEventAtIndexAsync(long index)
+        {
+            return Task.FromResult(_array[index]);
+        }
+
+        public Task<IEnumerable<PayloadEvent>> GetEventsBetweenAsync(long startIndex, long stopIndex)
+        {
+            return Task.Run(() => GetEventsBetween(startIndex, stopIndex));
         }
 
         public long GetGlobalEventsCount()

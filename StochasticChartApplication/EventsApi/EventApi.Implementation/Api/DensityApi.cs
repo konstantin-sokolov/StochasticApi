@@ -22,7 +22,7 @@ namespace EventApi.Implementation.Api
 
         private Task<List<DensityInfo>> GetDensityInfoAsync(long startTick, long stopTick, long searchStartIndex, long searchStopIndex, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 var result = new List<DensityInfo>();
                 var stopWatch = new Stopwatch();
@@ -38,7 +38,7 @@ namespace EventApi.Implementation.Api
                         var searchStartIndexTask = GetStartIndexAsync(startTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
                         var searchStopIndexTask = GetStopIndexAsync(endTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
 
-                        Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+                        await Task.WhenAll(searchStartIndexTask, searchStopIndexTask);
 
                         ctn.ThrowIfCancellationRequested();
 
@@ -52,18 +52,20 @@ namespace EventApi.Implementation.Api
                         }
 
                         //additional get - think about remove it in future
-                        var startEvent = _dataProvider.GetEventAtIndex(startIndex);
-                        var stopEvent = _dataProvider.GetEventAtIndex(stopIndex);
+                        var startEvent = _dataProvider.GetEventAtIndexAsync(startIndex);
+                        var stopEvent = _dataProvider.GetEventAtIndexAsync(stopIndex);
+                        await Task.WhenAll(startEvent, stopEvent);
+
                         result.Add(new DensityInfo()
                         {
                             EventsCount = stopIndex - startIndex + 1,
-                            Start = startEvent.Ticks,
-                            Stop = stopEvent.Ticks,
+                            Start = startEvent.Result.Ticks,
+                            Stop = stopEvent.Result.Ticks,
                             StartIndex = startIndex,
                             StopIndex = stopIndex
                         });
 
-                        startTick = Math.Max(stopEvent.Ticks, endTick) + 1;
+                        startTick = Math.Max(stopEvent.Result.Ticks, endTick) + 1;
                         searchStartIndex = stopIndex + 1;
                     } while (startTick < stopTick);
 

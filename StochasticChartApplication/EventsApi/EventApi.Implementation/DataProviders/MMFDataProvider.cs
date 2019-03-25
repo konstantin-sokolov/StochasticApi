@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Threading.Tasks;
 using EventApi.Models;
 
 namespace EventApi.Implementation.DataProviders
@@ -38,19 +39,9 @@ namespace EventApi.Implementation.DataProviders
             _globalStopTicks = GetEventAtIndex(_globalEventsCount - 1).Ticks;
         }
 
-        public PayloadEvent GetEventAtIndex(long index)
+        private IEnumerable<PayloadEvent> GetEventsBetween(long startIndex, long stopIndex)
         {
-            var offset = index * _entitySize;
-            using (var accessor = _memoryMappedFile.CreateViewAccessor(offset, _entitySize))
-            {
-                accessor.Read(0, out PayloadEvent payloadEvent);
-                return payloadEvent;
-            }
-        }
-
-        public IEnumerable<PayloadEvent> GetEventsBetween(long startIndex, long stopIndex)
-        {
-            if (stopIndex<=startIndex)
+            if (stopIndex <= startIndex)
                 return new PayloadEvent[0];
 
             var offset = startIndex * _entitySize;
@@ -67,6 +58,26 @@ namespace EventApi.Implementation.DataProviders
             }
 
             return result;
+        }
+
+        private PayloadEvent GetEventAtIndex(long index)
+        {
+            var offset = index * _entitySize;
+            using (var accessor = _memoryMappedFile.CreateViewAccessor(offset, _entitySize))
+            {
+                accessor.Read(0, out PayloadEvent payloadEvent);
+                return payloadEvent;
+            }
+        }
+
+        public Task<PayloadEvent> GetEventAtIndexAsync(long index)
+        {
+            return Task.Run(() => GetEventAtIndex(index));
+        }
+
+        public Task<IEnumerable<PayloadEvent>> GetEventsBetweenAsync(long startIndex, long stopIndex)
+        {
+            return Task.Run(() => GetEventsBetween(startIndex,stopIndex));
         }
 
         public long GetGlobalEventsCount()
