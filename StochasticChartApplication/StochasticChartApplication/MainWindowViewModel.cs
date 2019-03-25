@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
 using EventApi.Implementation.DataProviders;
@@ -46,23 +47,22 @@ namespace StochasticChartApplication
             ActiveArgsViewModel = _arrayGeneratorArgsViewModel;
         }
 
-        private void GenerateData()
+        private async Task GenerateDataAsync()
         {
             ProgressValue = 0;
             ProgressStatus = $"Test set generation: {ProgressValue}%";
             IsProcessingData = true;
             var generator = _generatorFactory.GetGenerator(ProviderType);
             generator.EventGenerateProgressChanged += OnEventGenerateProgressChanged;
-            generator.GenerateDataProviderAsync(_activeArgsViewModel.GetCollectionSize(), _activeArgsViewModel.GetParameters())
-                .ContinueWith(dataProvider =>
-                {
-                    generator.EventGenerateProgressChanged -= OnEventGenerateProgressChanged;
-                    _uiDispatcher.BeginInvoke(new Action(() =>
-                    {
-                        IsProcessingData = false;
-                        EventDensityViewModel = _viewModelFactory.GetViewModel(dataProvider.Result);
-                    }));
-                });
+            var dataProvider = await generator.GenerateDataProviderAsync(_activeArgsViewModel.GetCollectionSize(), _activeArgsViewModel.GetParameters());
+            generator.EventGenerateProgressChanged -= OnEventGenerateProgressChanged;
+            IsProcessingData = false;
+            EventDensityViewModel = _viewModelFactory.GetViewModel(dataProvider);
+        }
+
+        private void GenerateData()
+        {
+            GenerateDataAsync();
         }
 
         private void SkipSession()

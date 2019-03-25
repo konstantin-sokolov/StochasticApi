@@ -26,7 +26,7 @@ namespace StochasticUi.ViewModel
         private ImageSource _chartImageSource;
         private ImageSource _timeLineImageSource;
 
-        //private readonly Dispatcher _uiDispatcher;
+        private readonly Dispatcher _uiDispatcher;
         private double _currentWidth;
         private Task _swapTask;
         private CancellationTokenSource _calcDensityTokenSource;
@@ -38,7 +38,7 @@ namespace StochasticUi.ViewModel
             _scaler = scaler;
             _densityApi = densityApi;
             _logger = logger;
-          //  _uiDispatcher = Dispatcher.CurrentDispatcher;
+            _uiDispatcher = Dispatcher.CurrentDispatcher;
             MoveLeftCommand = new DelegateCommand(MoveLeft);
             MoveRightCommand = new DelegateCommand(MoveRight);
             RecalculateWholeImage();
@@ -64,49 +64,62 @@ namespace StochasticUi.ViewModel
 
         private void RecalculateWholeImage()
         {
-            _logger.Info("RecalculateChartImage");
+            _logger.Info("RecalculateWholeImage");
             RecalculateChartImage();
             RecalculateTimeLineImage();
         }
 
         private async Task RecalculateChartImage()
         {
-            _logger.Info("RecalculateChartImage");
-            _calcDensityTokenSource?.Cancel();
+            try
+            {
+                _logger.Info("RecalculateChartImage");
+                _calcDensityTokenSource?.Cancel();
 
-            _calcDensityTokenSource = new CancellationTokenSource();
-            var token = _calcDensityTokenSource.Token;
-            var correlationId = Guid.NewGuid();
-            _currentInfoCorrelationId = correlationId;
+                _calcDensityTokenSource = new CancellationTokenSource();
+                var token = _calcDensityTokenSource.Token;
+                var correlationId = Guid.NewGuid();
+                _currentInfoCorrelationId = correlationId;
 
-            await DrawCurrentImage(token, correlationId);
+                await DrawCurrentImage(token, correlationId);
 
-            var data = await GetDataFromApi(token);
-            _currentDensityInfo = data;
-            await DrawCurrentImage(token, correlationId);
+                var data = await GetDataFromApi(token);
+                _currentDensityInfo = data;
+                await DrawCurrentImage(token, correlationId);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Info("RecalculateChartImage: Task was cancelled");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"RecalculateChartImage: {ex.Message} - {ex.StackTrace}");
+            }
         }
 
         private async Task RecalculateTimeLineImage()
         {
-            _logger.Info("RecalculateChartImage");
+            _logger.Info("RecalculateTimeLineImage");
             if (_currentWidth < 50)
+            {
+                _logger.Info("RecalculateTimeLineImage: Width less than 50 px. Don't draw anything");
                 return;
+            }
 
             var scaleInfo = _scaler.GetCurrentScaleInfo();
             var timeLineImage = await TimeLineRender.RenderDataAsync(_currentWidth, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, CancellationToken.None);
             TimeLineImageSource = timeLineImage;
         }
 
-        private void ScheduleTimeLineRedraw()
+        private async Task ScheduleTimeLineRedraw()
         {
             if (_swapTask != null)
                 return;
 
-            //_swapTask = Task.Run(async () => { await Task.Delay(50); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
-            //{
-            //    _swapTask = null;
-            //    RecalculateTimeLineImage();
-            //})));
+            _swapTask = Task.Run(async () => { await Task.Delay(50); });
+            await _swapTask;
+            _swapTask = null;
+            RecalculateTimeLineImage();
         }
 
         private async Task<List<DensityInfo>> GetDataFromApi(CancellationToken token)
@@ -119,7 +132,6 @@ namespace StochasticUi.ViewModel
         private async Task DrawCurrentImage(CancellationToken token, Guid correlationId)
         {
             var scaleInfo = _scaler.GetCurrentScaleInfo();
-
 
             var visibleDensities = _currentDensityInfo?.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
             var chartImage = await ChartRender.RenderDataAsync(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, token);
@@ -140,6 +152,7 @@ namespace StochasticUi.ViewModel
 
         public void ChangeScale(double centerRelativePos, bool decrease)
         {
+            _logger.Info("ChangeScale");
             _scaler.Scale(centerRelativePos, decrease);
             OnPropertyChanged(nameof(CanMoveLeft));
             OnPropertyChanged(nameof(CanMoveRight));
@@ -171,6 +184,7 @@ namespace StochasticUi.ViewModel
 
         public void Dispose()
         {
+            _logger.Info("Dispose of EventDensityViewModel");
             _densityApi?.Dispose();
         }
     }
