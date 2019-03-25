@@ -29,8 +29,7 @@ namespace EventApi.Implementation.Api
             return Task.Run(() =>
             {
                 var compareResult = FindNearest(startTick, true, out var nearestIndex, minIndex,maxIndex, ctn);
-                if (ctn.IsCancellationRequested)
-                    return 0;
+                ctn.ThrowIfCancellationRequested();
 
                 switch (compareResult)
                 {
@@ -59,8 +58,7 @@ namespace EventApi.Implementation.Api
             return Task.Run(() =>
             {
                 var compareResult = FindNearest(stopTick, false, out var nearestIndex, minIndex, maxIndex, ctn);
-                if (ctn.IsCancellationRequested)
-                    return 0;
+               ctn.ThrowIfCancellationRequested();
 
                 switch (compareResult)
                 {
@@ -90,11 +88,7 @@ namespace EventApi.Implementation.Api
             int compareResult;
             do
             {
-                if (ctn.IsCancellationRequested)
-                {
-                    index = 0;
-                    return 0;
-                }
+                ctn.ThrowIfCancellationRequested();
 
                 mid = first + (last - first) / 2;
                 var globalIndex = even ? 2 * mid : 2 * mid + 1;

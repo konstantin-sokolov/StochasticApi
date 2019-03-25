@@ -19,50 +19,53 @@ namespace EventApi.Implementation.Api
             _logger = logger;
         }
 
-        public IEnumerable<PayloadEvent> GetEvents(long startTick, long stopTick, CancellationToken ctn = default(CancellationToken))
+        public Task<IEnumerable<PayloadEvent>> GetEventsAsync(long startTick, long stopTick, CancellationToken ctn = default(CancellationToken))
         {
-            _logger.Info($"EventApi: Requested events between: {startTick}-{stopTick}");
-            try
+            return Task.Run(() =>
             {
-                if (_globalEventsCount == 0)
+                _logger.Info($"EventApi: Requested events between: {startTick}-{stopTick}");
+                try
                 {
-                    _logger.Info("EventApi: _globalEventsCount == 0 - return empty results");
-                    return new PayloadEvent[0];
-                }
+                    if (_globalEventsCount == 0)
+                    {
+                        _logger.Info("EventApi: _globalEventsCount == 0 - return empty results");
+                        return new PayloadEvent[0];
+                    }
 
-                if (startTick > _globalStopTick)
+                    if (startTick > _globalStopTick)
+                    {
+                        _logger.Info("EventApi: startTick > _globalStopTick - return empty results");
+                        return new PayloadEvent[0];
+                    }
+
+                    if (stopTick < _globalStartTick)
+                    {
+                        _logger.Info("EventApi: stopTick < _globalStartTick - return empty results");
+                        return new PayloadEvent[0];
+                    }
+
+                    var stopWatch = new Stopwatch();
+                    stopWatch.Start();
+                    var searchStartIndexTask = GetStartIndexAsync(startTick, ctn: ctn);
+                    var searchStopIndexTask = GetStopIndexAsync(stopTick, ctn: ctn);
+                    Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+
+                    ctn.ThrowIfCancellationRequested();
+
+                    var startIndex = searchStartIndexTask.Result;
+                    var stopIndex = searchStopIndexTask.Result;
+
+                    var result = _dataProvider.GetEventsBetween(startIndex, stopIndex);
+                    stopWatch.Stop();
+                    _logger.Info($"EventApi: Got {stopIndex - startIndex} events in {stopWatch.ElapsedMilliseconds}ms");
+                    return result;
+                }
+                catch (Exception e)
                 {
-                    _logger.Info("EventApi: startTick > _globalStopTick - return empty results");
-                    return new PayloadEvent[0];
+                    _logger.Error(e);
+                    throw;
                 }
-
-                if (stopTick < _globalStartTick)
-                {
-                    _logger.Info("EventApi: stopTick < _globalStartTick - return empty results");
-                    return new PayloadEvent[0];
-                }
-
-                var stopWatch = new Stopwatch();
-                stopWatch.Start();
-                var searchStartIndexTask = GetStartIndexAsync(startTick, ctn: ctn);
-                var searchStopIndexTask = GetStopIndexAsync(stopTick, ctn: ctn);
-                Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
-
-                ctn.ThrowIfCancellationRequested();
-
-                var startIndex = searchStartIndexTask.Result;
-                var stopIndex = searchStopIndexTask.Result;
-
-                var result = _dataProvider.GetEventsBetween(startIndex, stopIndex);
-                stopWatch.Stop();
-                _logger.Info($"EventApi: Got {stopIndex - startIndex} events in {stopWatch.ElapsedMilliseconds}ms");
-                return result;
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e);
-                throw;
-            }
+            }, ctn);
         }
     }
 }

@@ -69,7 +69,7 @@ namespace StochasticUi.ViewModel
             RecalculateTimeLineImage();
         }
 
-        private void RecalculateChartImage()
+        private async Task RecalculateChartImage()
         {
             _logger.Info("RecalculateChartImage");
             _calcDensityTokenSource?.Cancel();
@@ -79,29 +79,22 @@ namespace StochasticUi.ViewModel
             var correlationId = Guid.NewGuid();
             _currentInfoCorrelationId = correlationId;
 
-            DrawCurrentImage(token, correlationId);
+            await DrawCurrentImage(token, correlationId);
 
-            GetDataFromApi(token).ContinueWith(data =>
-            {
-                if (_currentInfoCorrelationId != correlationId)
-                    return;
-
-                _currentDensityInfo = data.Result;
-                DrawCurrentImage(token, correlationId);
-            }, token);
+            var data = await GetDataFromApi(token);
+            _currentDensityInfo = data;
+            await DrawCurrentImage(token, correlationId);
         }
 
-        private void RecalculateTimeLineImage()
+        private async Task RecalculateTimeLineImage()
         {
             _logger.Info("RecalculateChartImage");
             if (_currentWidth < 50)
                 return;
 
-            Task.Run(() =>
-            {
-                var scaleInfo = _scaler.GetCurrentScaleInfo();
-                return TimeLineRender.RenderData(_currentWidth, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
-            }).ContinueWith(imageSource => _uiDispatcher.BeginInvoke(new Action(() => { TimeLineImageSource = imageSource.Result; })));
+            var scaleInfo = _scaler.GetCurrentScaleInfo();
+            var timeLineImage = await TimeLineRender.RenderDataAsync(_currentWidth, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, CancellationToken.None);
+            TimeLineImageSource = timeLineImage;
         }
 
         private void ScheduleTimeLineRedraw()
@@ -109,55 +102,28 @@ namespace StochasticUi.ViewModel
             if (_swapTask != null)
                 return;
 
-            _swapTask = Task.Run(async () => { await Task.Delay(300); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
+            _swapTask = Task.Run(async () => { await Task.Delay(50); }).ContinueWith(t => _uiDispatcher.BeginInvoke(new Action(() =>
             {
                 _swapTask = null;
                 RecalculateTimeLineImage();
             })));
         }
 
-        private Task<List<DensityInfo>> GetDataFromApi(CancellationToken token)
+        private async Task<List<DensityInfo>> GetDataFromApi(CancellationToken token)
         {
-            return Task.Run(() =>
-            {
-                try
-                {
-                    var scaleInfo = _scaler.GetCurrentScaleInfo();
-                    var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
-                    return _densityApi.GetDensityInfo(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error($"Error getting data from api:{e.Message}");
-                    return null;
-                }
-            }, token);
+            var scaleInfo = _scaler.GetCurrentScaleInfo();
+            var groupInterval = scaleInfo.CurrentWidth / IMAGE_WIDTH;
+            return await _densityApi.GetDensityInfoAsync(scaleInfo.CurrentStart, scaleInfo.CurrentStop, groupInterval, token);
         }
 
-        private void DrawCurrentImage(CancellationToken token, Guid correlationId)
+        private async Task DrawCurrentImage(CancellationToken token, Guid correlationId)
         {
-            PrepareImageFromCurrentData().ContinueWith(image => RenderImage(image.Result, correlationId), token);
-        }
-
-        private Task<ImageSource> PrepareImageFromCurrentData()
-        {
-            if (_currentDensityInfo == null)
-                return Task.FromResult((ImageSource) null);
-
-            return Task.Run(() =>
-            {
-                var scaleInfo = _scaler.GetCurrentScaleInfo();
-                var visibleDensities = _currentDensityInfo.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
-
-                return ChartRender.RenderData(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth);
-            });
-        }
-
-        private void RenderImage(ImageSource source, Guid correlationToken)
-        {
-            if (correlationToken != _currentInfoCorrelationId)
+            var scaleInfo = _scaler.GetCurrentScaleInfo();
+            var visibleDensities = _currentDensityInfo.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
+            var chartImage = await ChartRender.RenderDataAsync(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, token);
+            if (_currentInfoCorrelationId != correlationId)
                 return;
-            _uiDispatcher.BeginInvoke(new Action(() => { ChartImageSource = source; }));
+            ChartImageSource = chartImage;
         }
 
         #region public bindings

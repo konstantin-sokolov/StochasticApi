@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Color = System.Drawing.Color;
 using FontFamily = System.Drawing.FontFamily;
@@ -14,16 +16,21 @@ namespace StochasticUi.ViewModel.Renders
         private const int TEXT_WIDTH = 80;
         private const int TIMELINE_HEIGHT = 50;
 
-        public static ImageSource RenderData(double imageWidth,long startTicks, long ticksCounts)
+        public static Task<ImageSource> RenderDataAsync(double imageWidth, long startTicks, long ticksCounts, CancellationToken token)
         {
-            var intImageWidth = (int) imageWidth;
-            return BaseRender.RenderData(intImageWidth, TIMELINE_HEIGHT, g => DrawTimeLine(g, intImageWidth, startTicks, ticksCounts));
+            return Task.Run(() =>
+            {
+                var intImageWidth = (int) imageWidth;
+                return BaseRender.RenderData(intImageWidth, TIMELINE_HEIGHT, g => DrawTimeLine(g, intImageWidth, startTicks, ticksCounts,token));
+            }, token);
         }
 
-        private static void DrawTimeLine(Graphics g, int imageWidth, long startTicks, long ticksCounts)
+        private static void DrawTimeLine(Graphics g, int imageWidth, long startTicks, long ticksCounts, CancellationToken token)
         {
             for (var x = TIME_LINE_MARGIN; x < imageWidth; x += TEXT_WIDTH)
             {
+                token.ThrowIfCancellationRequested();
+
                 var font = new Font(FontFamily.GenericSerif, 14, FontStyle.Bold, GraphicsUnit.Point);
                 var positionInTicks = (double) x * ticksCounts / imageWidth + startTicks;
                 var timeText = GetTime((long) positionInTicks, ticksCounts);

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using EventApi.Models;
 using Brushes = System.Drawing.Brushes;
@@ -18,14 +20,15 @@ namespace StochasticUi.ViewModel.Renders
 
         private static readonly Color _paintColor = Color.DeepSkyBlue;
 
-          
-
-        public static ImageSource RenderData(IEnumerable<DensityInfo> densities, long startTicks,long ticksCount)
+        public static Task<ImageSource> RenderDataAsync(IEnumerable<DensityInfo> densities, long startTicks, long ticksCount, CancellationToken token)
         {
-            if (!densities.Any())
-                return RenderEmptyData();
+            return Task.Run(() =>
+            {
+                if (!densities.Any())
+                    return RenderEmptyData();
 
-            return BaseRender.RenderData(IMAGE_WIDTH, IMAGE_HEIGHT, g => RenderObject(g, densities, startTicks, ticksCount));
+                return BaseRender.RenderData(IMAGE_WIDTH, IMAGE_HEIGHT, g => RenderDensityChart(g, densities, startTicks, ticksCount, token));
+            }, token);
         }
 
         private static ImageSource RenderEmptyData()
@@ -33,7 +36,7 @@ namespace StochasticUi.ViewModel.Renders
             return BaseRender.RenderData(IMAGE_WIDTH, IMAGE_HEIGHT, RenderEmptyObject);
         }
 
-        private static void RenderObject(Graphics g, IEnumerable<DensityInfo> densities, long startTicks, long ticksCount)
+        private static void RenderDensityChart(Graphics g, IEnumerable<DensityInfo> densities, long startTicks, long ticksCount, CancellationToken token)
         {
             var maxDensity = densities.Max(t => t.EventsCount);
 
@@ -43,6 +46,8 @@ namespace StochasticUi.ViewModel.Renders
 
             foreach (var density in densities)
             {
+                token.ThrowIfCancellationRequested();
+
                 var y = (int)((double) density.EventsCount * IMAGE_HEIGHT / maxDensity);
                 var startPosition = (int)Math.Floor((double) (density.Start - startTicks) * IMAGE_WIDTH / ticksCount);
                 var endPosition = (int)Math.Ceiling((double)(density.Stop - startTicks) * IMAGE_WIDTH / ticksCount);

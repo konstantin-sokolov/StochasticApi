@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoFixture;
 using EventApi.Implementation.Api;
 using EventApi.Implementation.DataProviders;
@@ -37,9 +38,9 @@ namespace EventApi.Implementation.UnitTests
 
         [Test]
         [TestCaseSource(typeof(DensityApiTestCases),nameof(DensityApiTestCases.TestCases))]
-        public void GetEvents_CheckIntervals(long start, long stop,long groupInterval, IEnumerable<DensityInfo> expected)
+        public async Task GetEvents_CheckIntervals(long start, long stop,long groupInterval, IEnumerable<DensityInfo> expected)
         {
-            var actual = _densityApi.GetDensityInfo(start, stop, groupInterval);
+            var actual = await _densityApi.GetDensityInfoAsync(start, stop, groupInterval);
             actual.Should().BeEquivalentTo(expected);
         }
     }

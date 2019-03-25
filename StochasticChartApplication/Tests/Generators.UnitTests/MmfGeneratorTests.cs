@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using AutoFixture;
 using EventApi.Implementation.DataProviders;
-using FluentAssertions;
 using Generators.UnitTests.TestCases;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;

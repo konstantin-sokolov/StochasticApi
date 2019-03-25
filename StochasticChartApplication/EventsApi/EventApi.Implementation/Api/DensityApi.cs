@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
@@ -19,64 +20,66 @@ namespace EventApi.Implementation.Api
             _logger = logger;
         }
 
-        private List<DensityInfo> GetDensityInfo(long startTick, long stopTick, long searchStartIndex, long searchStopIndex, long groupInterval, CancellationToken ctn = default(CancellationToken))
+        private Task<List<DensityInfo>> GetDensityInfoAsync(long startTick, long stopTick, long searchStartIndex, long searchStopIndex, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
-            var result = new List<DensityInfo>();
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            try
+            return Task.Run(() =>
             {
-                do
+                var result = new List<DensityInfo>();
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+                try
                 {
-                    if (ctn.IsCancellationRequested)
-                        return null;
-
-                    var endTick = Math.Min(startTick + groupInterval, stopTick);
-
-                    var searchStartIndexTask = GetStartIndexAsync(startTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
-                    var searchStopIndexTask = GetStopIndexAsync(endTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
-                    Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
-
-                    if (ctn.IsCancellationRequested)
-                        return null;
-
-                    var startIndex = searchStartIndexTask.Result;
-                    var stopIndex = searchStopIndexTask.Result;
-                    if (stopIndex < startIndex)
+                    do
                     {
-                        startTick = endTick + 1;
+                        ctn.ThrowIfCancellationRequested();
+
+                        var endTick = Math.Min(startTick + groupInterval, stopTick);
+
+                        var searchStartIndexTask = GetStartIndexAsync(startTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
+                        var searchStopIndexTask = GetStopIndexAsync(endTick, minIndex: searchStartIndex, maxIndex: searchStopIndex, ctn: ctn);
+
+                        Task.WaitAll(searchStartIndexTask, searchStopIndexTask);
+
+                        ctn.ThrowIfCancellationRequested();
+
+                        var startIndex = searchStartIndexTask.Result;
+                        var stopIndex = searchStopIndexTask.Result;
+                        if (stopIndex < startIndex)
+                        {
+                            startTick = endTick + 1;
+                            searchStartIndex = stopIndex + 1;
+                            continue;
+                        }
+
+                        //additional get - think about remove it in future
+                        var startEvent = _dataProvider.GetEventAtIndex(startIndex);
+                        var stopEvent = _dataProvider.GetEventAtIndex(stopIndex);
+                        result.Add(new DensityInfo()
+                        {
+                            EventsCount = stopIndex - startIndex + 1,
+                            Start = startEvent.Ticks,
+                            Stop = stopEvent.Ticks,
+                            StartIndex = startIndex,
+                            StopIndex = stopIndex
+                        });
+
+                        startTick = Math.Max(stopEvent.Ticks, endTick) + 1;
                         searchStartIndex = stopIndex + 1;
-                        continue;
-                    }
+                    } while (startTick < stopTick);
 
-                    //additional get - think about remove it in future
-                    var startEvent = _dataProvider.GetEventAtIndex(startIndex);
-                    var stopEvent = _dataProvider.GetEventAtIndex(stopIndex);
-                    result.Add(new DensityInfo()
-                    {
-                        EventsCount = stopIndex - startIndex + 1,
-                        Start = startEvent.Ticks,
-                        Stop = stopEvent.Ticks,
-                        StartIndex = startIndex,
-                        StopIndex = stopIndex
-                    });
-
-                    startTick = Math.Max(stopEvent.Ticks, endTick) + 1;
-                    searchStartIndex = stopIndex + 1;
-                } while (startTick < stopTick);
-
-                stopWatch.Stop();
-                _logger.Info($"DensityApi: GetDensityInfo - got {result.Count} densities in {stopWatch.ElapsedMilliseconds}ms");
-                return result;
-            }
-            catch (Exception e)
-            {
-                _logger.Error(e);
-                throw;
-            }
+                    stopWatch.Stop();
+                    _logger.Info($"DensityApi: GetDensityInfo - got {result.Count} densities in {stopWatch.ElapsedMilliseconds}ms");
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    _logger.Error(e);
+                    throw;
+                }
+            }, ctn);
         }
 
-        private List<DensityInfo> SplitSingleDensityInfo(DensityInfo info, long groupInterval, CancellationToken ctn = default(CancellationToken))
+        private async Task<List<DensityInfo>> SplitSingleDensityInfo(DensityInfo info, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
             if (info.StopIndex == info.StartIndex + 1)
                 return new List<DensityInfo> {info};
@@ -86,10 +89,10 @@ namespace EventApi.Implementation.Api
             var startTick = Math.Max(info.Start, _globalStartTick);
             var stopTick = Math.Min(info.Stop, _globalStopTick);
 
-            return GetDensityInfo(startTick, stopTick, info.StartIndex, info.StopIndex, groupInterval, ctn);
+            return await GetDensityInfoAsync(startTick, stopTick, info.StartIndex, info.StopIndex, groupInterval, ctn);
         }
 
-        public List<DensityInfo> GetDensityInfo(long startTick, long stopTick, long groupInterval, CancellationToken ctn = default(CancellationToken))
+        public async Task<List<DensityInfo>> GetDensityInfoAsync(long startTick, long stopTick, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
             if (_globalEventsCount == 0)
                 return new List<DensityInfo>(0);
@@ -100,7 +103,7 @@ namespace EventApi.Implementation.Api
             startTick = Math.Max(startTick, _globalStartTick);
             stopTick = Math.Min(stopTick, _globalStopTick);
 
-            return GetDensityInfo(startTick, stopTick, 0, _globalEventsCount - 1, groupInterval, ctn);
+            return await GetDensityInfoAsync(startTick, stopTick, 0, _globalEventsCount - 1, groupInterval, ctn);
         }
 
 
@@ -108,43 +111,63 @@ namespace EventApi.Implementation.Api
 
         // it will be the new version api - with better performance
 
-        public List<DensityInfo> SplitDensityInfo(List<DensityInfo> currentInfo, long start, long stop, long groupInterval, CancellationToken ctn = default(CancellationToken))
+        public Task<List<DensityInfo>> SplitDensityInfoAsync(List<DensityInfo> currentInfo, long start, long stop, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
-            List<Task<List<DensityInfo>>> splitTasks = new List<Task<List<DensityInfo>>>();
-            for (int i = 0; i < currentInfo.Count; i++)
+            return Task.Run(() =>
             {
-                if (currentInfo[i].Stop < start)
-                    continue;
-                if (currentInfo[i].Start > stop)
-                    continue;
+                if (currentInfo == null || !currentInfo.Any())
+                    return new List<DensityInfo>(0);
 
-                var i1 = i;
-                splitTasks.Add(Task.Run(() => SplitSingleDensityInfo(currentInfo[i1], groupInterval, ctn), ctn));
-            }
+                var visibleInfo = currentInfo.Where(t => t.Stop >= start && t.Start <= stop).ToArray();
+                if (!visibleInfo.Any())
+                    return new List<DensityInfo>(0);
 
-            Task.WaitAll(splitTasks.ToArray());
+                var taskResults = new List<DensityInfo>[visibleInfo.Length];
+                var options = new ParallelOptions {CancellationToken = ctn};
 
-            if (ctn.IsCancellationRequested)
-                return null;
-
-            var result = new List<DensityInfo>();
-            for (int i = 0; i < splitTasks.Count; i++)
-            {
-                var splitedDensities = splitTasks[i].Result;
-                for (int j = 0; j < splitedDensities.Count; j++)
+                try
                 {
-                    if (splitedDensities[j].Stop < start)
-                        continue;
-                    if (splitedDensities[j].Start > stop)
-                        continue;
-                    result.Add(splitedDensities[j]);
+                    Parallel.For(0, visibleInfo.Length, options, async (index) => taskResults[index] = await SplitSingleDensityInfo(visibleInfo[index], groupInterval, ctn));
                 }
-            }
+                catch (OperationCanceledException ex)
+                {
+                    _logger.Info("DensityApi: SplitDensityInfo was canceled");
+                }
+                catch (AggregateException ex)
+                {
+                    var wasCriticalError = false;
+                    foreach (var innerException in ex.InnerExceptions)
+                    {
+                        if (innerException is OperationCanceledException)
+                            continue;
+                        _logger.Error($"Error while split densityInfo:{ex.Message} - {ex.StackTrace}");
+                        wasCriticalError = true;
+                    }
 
-            return result;
+                    if (wasCriticalError)
+                        throw;
+                }
+
+                ctn.ThrowIfCancellationRequested();
+
+                var result = new List<DensityInfo>();
+                foreach (var splitDensities in taskResults)
+                {
+                    foreach (var densityInfos in splitDensities)
+                    {
+                        if (densityInfos.Stop < start)
+                            continue;
+                        if (densityInfos.Start > stop)
+                            continue;
+                        result.Add(densityInfos);
+                    }
+                }
+
+                return result;
+            }, ctn);
         }
 
-        public List<DensityInfo> GetInfoForRightSide(long lastStopTick, long lastStopIndex, long stopTick, long groupInterval, CancellationToken ctn = default(CancellationToken))
+        public async Task<List<DensityInfo>> GetInfoForRightSideAsync(long lastStopTick, long lastStopIndex, long stopTick, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
             if (_globalEventsCount == 0)
                 return new List<DensityInfo>(0);
@@ -153,15 +176,15 @@ namespace EventApi.Implementation.Api
                 return new List<DensityInfo>(0);
 
             if (lastStopIndex == _globalEventsCount - 1)
-                return new List<DensityInfo>();
+                return new List<DensityInfo>(0);
 
             var startTick = Math.Max(lastStopTick + 1, _globalStartTick);
             stopTick = Math.Min(stopTick, _globalStopTick);
 
-            return GetDensityInfo(startTick, stopTick, lastStopIndex + 1, _globalEventsCount - 1, groupInterval, ctn);
+            return await GetDensityInfoAsync(startTick, stopTick, lastStopIndex + 1, _globalEventsCount - 1, groupInterval, ctn);
         }
 
-        public List<DensityInfo> GetInfoForLeftSide(long firstStartTick, long firstStartIndex, long startTick, long groupInterval, CancellationToken ctn = default(CancellationToken))
+        public async Task<List<DensityInfo>> GetInfoForLeftSideAsync(long firstStartTick, long firstStartIndex, long startTick, long groupInterval, CancellationToken ctn = default(CancellationToken))
         {
             if (_globalEventsCount == 0)
                 return new List<DensityInfo>(0);
@@ -175,7 +198,7 @@ namespace EventApi.Implementation.Api
             startTick = Math.Max(startTick, _globalStartTick);
             var stopTick = Math.Min(firstStartTick - 1, _globalStopTick);
 
-            return GetDensityInfo(startTick, stopTick, 0, firstStartIndex - 1, groupInterval, ctn);
+            return await GetDensityInfoAsync(startTick, stopTick, 0, firstStartIndex - 1, groupInterval, ctn);
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using AutoFixture;
 using EventApi.Implementation.DataProviders;
 using EventApi.Implementation.UnitTests.TestCases;
@@ -34,13 +35,14 @@ namespace EventApi.Implementation.UnitTests
         }
 
         [Test]
-        [TestCaseSource(typeof(EventApiTestCases),nameof(EventApiTestCases.TestCases))]
-        public void GetEvents_CheckIntervals(long start, long stop, int[] indexes)
+        [TestCaseSource(typeof(EventApiTestCases), nameof(EventApiTestCases.TestCases))]
+        public async Task GetEvents_CheckIntervals(long start, long stop, int[] indexes)
         {
-            var actual = _eventApi.GetEvents(start, stop).ToArray();
-            actual.Length.Should().Be(indexes.Length);
+            var actual = await _eventApi.GetEventsAsync(start, stop);
+            var actualArray = actual.ToArray();
+            actualArray.Length.Should().Be(indexes.Length);
             for (int i = 0; i < indexes.Length; i++)
-                actual[i].Should().BeEquivalentTo(_array[indexes[i]]);
+                actualArray[i].Should().BeEquivalentTo(_array[indexes[i]]);
         }
     }
 }
