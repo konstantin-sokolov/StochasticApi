@@ -41,7 +41,7 @@ namespace EventApi.Implementation.UnitTests
             var arraySize = 6;
             var array = _fixture.CreateMany<PayloadEvent>(arraySize).ToArray();
             var dataProvider = new ArrayDataProvider(array);
-            Assert.Throws<IndexOutOfRangeException>(async () => await dataProvider.GetEventAtIndexAsync(index));
+            Assert.ThrowsAsync<IndexOutOfRangeException>(async () => await dataProvider.GetEventAtIndexAsync(index));
         }
 
         [Test]
