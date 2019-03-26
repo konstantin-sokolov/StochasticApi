@@ -39,7 +39,7 @@ namespace Generators.UnitTests
 
         [TestMethod]
         [TestCaseSource(typeof(MmfTestCases), nameof(MmfTestCases.BadArgumentsTestCase))]
-        public void GenerateDataProvider_ShouldBeException_BadArgumentsTestCase(long collectionSize, Wrapper wrapper)
+        public void GenerateDataProvider_BadArgumentsTestCase_ShouldBeException(long collectionSize, Wrapper wrapper)
         {
             var generatorFactory = new GeneratorFactory(_logger);
             var generator = generatorFactory.GetGenerator(ProviderType.MemoryMappedFile);

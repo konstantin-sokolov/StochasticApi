@@ -72,6 +72,8 @@
     <Compile Include="GeneratorArgs\BaseGeneratorArgsViewModel.cs" />
     <Compile Include="DensityViewModelFactory.cs" />
     <Compile Include="Renders\BaseRender.cs" />
+    <Compile Include="Renders\IChartRender.cs" />
+    <Compile Include="Renders\ITimeLineRender.cs" />
     <Compile Include="Renders\TimeLineRender.cs" />
     <Compile Include="Scale\Scaler.cs" />
     <Compile Include="Scale\ScaleInfo.cs" />

@@ -45,7 +45,7 @@ namespace EventApi.Implementation.DataProviders
                 return new PayloadEvent[0];
 
             var offset = startIndex * _entitySize;
-            var count = stopIndex - startIndex;
+            var count = stopIndex - startIndex + 1;
             var result = new PayloadEvent[count];
             var byteSize = _entitySize * count;
             using (var accessor = _memoryMappedFile.CreateViewAccessor(offset, byteSize))
@@ -62,6 +62,9 @@ namespace EventApi.Implementation.DataProviders
 
         private PayloadEvent GetEventAtIndex(long index)
         {
+            if (index < 0 || index >= _globalEventsCount)
+                throw new IndexOutOfRangeException();
+
             var offset = index * _entitySize;
             using (var accessor = _memoryMappedFile.CreateViewAccessor(offset, _entitySize))
             {

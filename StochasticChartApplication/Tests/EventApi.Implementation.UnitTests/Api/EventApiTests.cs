@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using EventApi.Implementation.DataProviders;
@@ -43,6 +45,20 @@ namespace EventApi.Implementation.UnitTests
             actualArray.Length.Should().Be(indexes.Length);
             for (int i = 0; i < indexes.Length; i++)
                 actualArray[i].Should().BeEquivalentTo(_array[indexes[i]]);
+        }
+
+        [Test]
+        public async Task GetEvents_CheckCancellation_ShouldBeException()
+        {
+            using (var ctnSource = new CancellationTokenSource())
+            {
+                var token = ctnSource.Token;
+                ctnSource.Cancel();
+
+                Assert.That(async () => await _eventApi.GetEventsAsync(0, 10, token),
+                    Throws.Exception
+                        .AssignableTo(typeof(OperationCanceledException)));
+            }
         }
     }
 }

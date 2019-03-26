@@ -23,22 +23,28 @@ namespace StochasticUi.ViewModel
         private readonly IScaler _scaler;
         private readonly IDensityApi _densityApi;
         private readonly ILogger _logger;
+        private readonly ITimeLineRender _timeLineRender;
+        private readonly IChartRender _chartRender;
         private ImageSource _chartImageSource;
         private ImageSource _timeLineImageSource;
 
-        private readonly Dispatcher _uiDispatcher;
         private double _currentWidth;
         private Task _swapTask;
         private CancellationTokenSource _calcDensityTokenSource;
         private List<DensityInfo> _currentDensityInfo;
         private Guid _currentInfoCorrelationId;
 
-        public EventDensityViewModel(IScaler scaler, IDensityApi densityApi, ILogger logger)
+        public EventDensityViewModel(IScaler scaler, 
+            IDensityApi densityApi,
+            ILogger logger,
+            ITimeLineRender timeLineRender,
+            IChartRender chartRender)
         {
             _scaler = scaler;
             _densityApi = densityApi;
             _logger = logger;
-            _uiDispatcher = Dispatcher.CurrentDispatcher;
+            _timeLineRender = timeLineRender;
+            _chartRender = chartRender;
             MoveLeftCommand = new DelegateCommand(MoveLeft);
             MoveRightCommand = new DelegateCommand(MoveRight);
             RecalculateWholeImage();
@@ -107,7 +113,7 @@ namespace StochasticUi.ViewModel
             }
 
             var scaleInfo = _scaler.GetCurrentScaleInfo();
-            var timeLineImage = await TimeLineRender.RenderDataAsync(_currentWidth, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, CancellationToken.None);
+            var timeLineImage = await _timeLineRender.RenderDataAsync(_currentWidth, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, CancellationToken.None);
             TimeLineImageSource = timeLineImage;
         }
 
@@ -134,7 +140,7 @@ namespace StochasticUi.ViewModel
             var scaleInfo = _scaler.GetCurrentScaleInfo();
 
             var visibleDensities = _currentDensityInfo?.Where(den => den.Start <= scaleInfo.CurrentStop && den.Stop >= scaleInfo.CurrentStart).ToList();
-            var chartImage = await ChartRender.RenderDataAsync(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, token);
+            var chartImage = await _chartRender.RenderDataAsync(visibleDensities, scaleInfo.CurrentStart, scaleInfo.CurrentWidth, token);
             if (_currentInfoCorrelationId != correlationId)
                 return;
             ChartImageSource = chartImage;

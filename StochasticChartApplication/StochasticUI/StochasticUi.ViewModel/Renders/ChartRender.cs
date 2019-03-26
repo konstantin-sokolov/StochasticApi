@@ -13,27 +13,22 @@ using Point = System.Drawing.Point;
 
 namespace StochasticUi.ViewModel.Renders
 {
-    public static class ChartRender
+    public class ChartRender: BaseRender,IChartRender
     {
         public const int IMAGE_WIDTH = 1400;
         public const int IMAGE_HEIGHT = 1000;
 
         private static readonly Color _paintColor = Color.DeepSkyBlue;
 
-        public static Task<ImageSource> RenderDataAsync(IEnumerable<DensityInfo> densities, long startTicks, long ticksCount, CancellationToken token)
+        public Task<ImageSource> RenderDataAsync(IEnumerable<DensityInfo> densities, long startTicks, long ticksCount, CancellationToken token)
         {
             return Task.Run(() =>
             {
                 if (densities == null || !densities.Any())
-                    return RenderEmptyData();
+                    return RenderImage(IMAGE_WIDTH, IMAGE_HEIGHT, RenderEmptyObject);
 
-                return BaseRender.RenderData(IMAGE_WIDTH, IMAGE_HEIGHT, g => RenderDensityChart(g, densities, startTicks, ticksCount, token));
+                return RenderImage(IMAGE_WIDTH, IMAGE_HEIGHT, g => RenderDensityChart(g, densities, startTicks, ticksCount, token));
             }, token);
-        }
-
-        private static ImageSource RenderEmptyData()
-        {
-            return BaseRender.RenderData(IMAGE_WIDTH, IMAGE_HEIGHT, RenderEmptyObject);
         }
 
         private static void RenderDensityChart(Graphics g, IEnumerable<DensityInfo> densities, long startTicks, long ticksCount, CancellationToken token)

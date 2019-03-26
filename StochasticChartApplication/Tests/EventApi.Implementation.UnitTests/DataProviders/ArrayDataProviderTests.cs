@@ -15,11 +15,6 @@ namespace EventApi.Implementation.UnitTests
     {
         readonly IFixture _fixture = new Fixture();
 
-        [OneTimeSetUp]
-        public void Init()
-        {
-        }
-
         [Test]
         public async Task GetEventAtIndex_SimpleValue_ReturnedEquals()
         {

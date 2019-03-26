@@ -5,6 +5,7 @@ using EventsApi.Contracts;
 using NLog;
 using Prism.Autofac;
 using StochasticUi.ViewModel;
+using StochasticUi.ViewModel.Renders;
 using StochasticUi.ViewModel.Scale;
 
 namespace StochasticChartApplication.DI
@@ -51,6 +52,8 @@ namespace StochasticChartApplication.DI
             // должны быть здесь...
             var logger = NLog.LogManager.GetCurrentClassLogger();
             builder.RegisterInstance(logger).As<ILogger>();
+            builder.RegisterType<TimeLineRender>().As<ITimeLineRender>().SingleInstance();
+            builder.RegisterType<ChartRender>().As<IChartRender>().SingleInstance();
             builder.RegisterType<EventApi.Implementation.Api.EventApi>().As<IEventApi>();
             builder.RegisterType<EventApi.Implementation.Api.DensityApi>().As<IDensityApi>();
             builder.RegisterType<Scaler>().As<IScaler>();

@@ -10,18 +10,18 @@ using FontStyle = System.Drawing.FontStyle;
 
 namespace StochasticUi.ViewModel.Renders
 {
-    public static class TimeLineRender
+    public class TimeLineRender: BaseRender,ITimeLineRender
     {
         private const int TIME_LINE_MARGIN = 40;
         private const int TEXT_WIDTH = 80;
         private const int TIMELINE_HEIGHT = 50;
 
-        public static Task<ImageSource> RenderDataAsync(double imageWidth, long startTicks, long ticksCounts, CancellationToken token)
+        public Task<ImageSource> RenderDataAsync(double imageWidth, long startTicks, long ticksCounts, CancellationToken token)
         {
             return Task.Run(() =>
             {
                 var intImageWidth = (int) imageWidth;
-                return BaseRender.RenderData(intImageWidth, TIMELINE_HEIGHT, g => DrawTimeLine(g, intImageWidth, startTicks, ticksCounts,token));
+                return RenderImage(intImageWidth, TIMELINE_HEIGHT, g => DrawTimeLine(g, intImageWidth, startTicks, ticksCounts,token));
             }, token);
         }
 

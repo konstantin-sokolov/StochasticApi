@@ -7,12 +7,12 @@ using System.Windows.Media.Imaging;
 
 namespace StochasticUi.ViewModel.Renders
 {
-    internal static class BaseRender
+    public abstract class BaseRender
     {
         [DllImport("gdi32.dll")]
         public static extern bool DeleteObject(IntPtr hObject);
 
-        public static ImageSource RenderData(int imageWidth, int imageHeight,Action<Graphics> renderObject)
+        protected ImageSource RenderImage(int imageWidth, int imageHeight, Action<Graphics> renderObject)
         {
             BitmapSource bmpSource;
             using (var bmp = new Bitmap(imageWidth, imageHeight))

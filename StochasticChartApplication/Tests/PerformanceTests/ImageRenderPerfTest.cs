@@ -16,6 +16,7 @@ namespace PerformanceTests
         private long _currentStart;
         private long _currentLength;
         private readonly Random _random = new Random(42);
+        private IChartRender _chartRender;
 
         [Params(1000, 2000)] public int N;
 
@@ -30,9 +31,10 @@ namespace PerformanceTests
             }).ToArray();
             _currentStart = data[0].Start;
             _currentLength = data[data.Length - 1].Stop - _currentStart;
+            _chartRender = new ChartRender();
         }
 
         [Benchmark]
-        public async Task RenderData() => await ChartRender.RenderDataAsync(data, _currentStart, _currentLength, CancellationToken.None);
+        public async Task RenderData() => await _chartRender.RenderDataAsync(data, _currentStart, _currentLength, CancellationToken.None);
     }
 }
