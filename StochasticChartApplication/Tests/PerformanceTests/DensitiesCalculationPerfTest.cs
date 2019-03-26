@@ -17,7 +17,7 @@ using Moq;
 
 namespace PerformanceTests
 {
-    [SimpleJob(RunStrategy.ColdStart, 5)]
+    [SimpleJob(RunStrategy.ColdStart, 2)]
     [RPlotExporter, RankColumn]
     public class DensitiesCalculationPerfTest
     {

@@ -126,12 +126,11 @@ namespace EventApi.Implementation.Api
                 if (!visibleInfo.Any())
                     return new List<DensityInfo>(0);
 
-                var taskResults = new List<DensityInfo>[visibleInfo.Length];
-                var options = new ParallelOptions {CancellationToken = ctn};
-
+                var tasks = visibleInfo.Select(t => SplitSingleDensityInfo(t, groupInterval, ctn));
+               
                 try
                 {
-                    Parallel.For(0, visibleInfo.Length, options, async (index) => taskResults[index] = await SplitSingleDensityInfo(visibleInfo[index], groupInterval, ctn));
+                    Task.WhenAll(tasks);
                 }
                 catch (OperationCanceledException ex)
                 {
@@ -155,9 +154,9 @@ namespace EventApi.Implementation.Api
                 ctn.ThrowIfCancellationRequested();
 
                 var result = new List<DensityInfo>();
-                foreach (var splitDensities in taskResults)
+                foreach (var splitDensities in tasks)
                 {
-                    foreach (var densityInfos in splitDensities)
+                    foreach (var densityInfos in splitDensities.Result)
                     {
                         if (densityInfos.Stop < start)
                             continue;
