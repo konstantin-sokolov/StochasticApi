@@ -7,9 +7,9 @@
              d:DesignHeight="450" d:DesignWidth="800" Loaded="EventDensityView_OnLoaded">
     <Grid SizeChanged="FrameworkElement_OnSizeChanged">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30"/>
+            <ColumnDefinition Width="40"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="30"/>
+            <ColumnDefinition Width="40"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
