@@ -74,7 +74,6 @@ namespace StochasticChartApplication
             {
                 generator.EventGenerateProgressChanged -= OnEventGenerateProgressChanged;
             }
-
         }
 
         private void GenerateData()

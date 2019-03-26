@@ -65,7 +65,7 @@ namespace StochasticUI.ViewModel.UnitTests
                 vm.ChangeWidth(i*15);
 
             await Task.Delay(300);
-            _timeLineRenderMock.Verify(t => t.RenderDataAsync(It.IsAny<double>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Once);
+            _timeLineRenderMock.Verify(t => t.RenderDataAsync(It.IsAny<double>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.AtMost(10));
         }
 
         [Test]
