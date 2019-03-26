@@ -88,11 +88,25 @@ namespace StochasticUi.ViewModel
                 var correlationId = Guid.NewGuid();
                 _currentInfoCorrelationId = correlationId;
 
-                await DrawCurrentImage(token, correlationId);
+                var drawTask = DrawCurrentImage(token, correlationId);
 
-                var data = await GetDataFromApi(token);
-                _currentDensityInfo = data;
+                var getDataTask = GetDataFromApi(token);
+                await Task.WhenAll(getDataTask, drawTask);
+
+                _currentDensityInfo = getDataTask.Result;
                 await DrawCurrentImage(token, correlationId);
+            }
+            catch (AggregateException e )
+            {
+                foreach (var innerException in e.InnerExceptions)
+                {
+                    if (innerException is OperationCanceledException)
+                    {
+                        _logger.Info("RecalculateChartImage: Task was cancelled");
+                        continue;
+                    }
+                    _logger.Error($"RecalculateChartImage: {innerException.Message} - {innerException.StackTrace}");
+                }
             }
             catch (OperationCanceledException)
             {
