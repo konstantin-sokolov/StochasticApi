@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using EventApi.Models;
 using EventsApi.Contracts;
+using EventsApi.Contracts.EventApi;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using NLog;

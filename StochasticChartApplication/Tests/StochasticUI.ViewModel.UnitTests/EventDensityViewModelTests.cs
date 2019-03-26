@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using EventApi.Models;
 using EventsApi.Contracts;
+using EventsApi.Contracts.EventApi;
 using FluentAssertions;
 using Moq;
 using NLog;

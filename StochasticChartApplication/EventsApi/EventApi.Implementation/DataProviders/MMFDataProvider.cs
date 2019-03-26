@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Threading.Tasks;
 using EventApi.Models;
+using EventsApi.Contracts.DataProviders;
 
 namespace EventApi.Implementation.DataProviders
 {

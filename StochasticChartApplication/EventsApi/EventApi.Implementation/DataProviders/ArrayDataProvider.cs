@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EventApi.Models;
+using EventsApi.Contracts.DataProviders;
 
 namespace EventApi.Implementation.DataProviders
 {

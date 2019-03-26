@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventApi.Models;
 
-namespace EventsApi.Contracts
+namespace EventsApi.Contracts.EventApi
 {
     public interface IEventApi:IDisposable
     {

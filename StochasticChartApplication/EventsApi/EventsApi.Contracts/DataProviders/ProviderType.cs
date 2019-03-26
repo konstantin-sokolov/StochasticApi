@@ -1,4 +1,4 @@
-﻿namespace EventApi.Implementation.DataProviders
+﻿namespace EventsApi.Contracts.DataProviders
 {
     public enum ProviderType
     {

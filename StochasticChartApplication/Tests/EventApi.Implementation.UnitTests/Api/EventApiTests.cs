@@ -11,12 +11,12 @@ using Moq;
 using NLog;
 using NUnit.Framework;
 
-namespace EventApi.Implementation.UnitTests
+namespace EventApi.Implementation.UnitTests.Api
 {
     [TestFixture]
     public class EventApiTests
     {
-        private Api.EventApi _eventApi;
+        private Implementation.Api.EventApi _eventApi;
         private readonly IFixture _fixture = new Fixture();
         private PayloadEvent[] _array;
 
@@ -33,7 +33,7 @@ namespace EventApi.Implementation.UnitTests
 
             var loggerMock = new Mock<ILogger>();
             var dataProvider = new ArrayDataProvider(_array);
-            _eventApi = new Api.EventApi(loggerMock.Object, dataProvider);
+            _eventApi = new Implementation.Api.EventApi(loggerMock.Object, dataProvider);
         }
 
         [Test]

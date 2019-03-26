@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using EventApi.Models;
 
-namespace EventApi.Implementation.DataProviders
+namespace EventsApi.Contracts.DataProviders
 {
     public interface IDataProvider:IDisposable
     {

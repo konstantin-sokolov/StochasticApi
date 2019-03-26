@@ -3,6 +3,7 @@ using System.IO;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using EventApi.Implementation.DataProviders;
+using EventsApi.Contracts.DataProviders;
 using Generators;
 using Moq;
 using NLog;

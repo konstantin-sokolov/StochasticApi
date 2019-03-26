@@ -103,6 +103,10 @@
       <Project>{484a5d12-305b-410c-ad37-601bb2e10cfb}</Project>
       <Name>EventApi.Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\EventsApi\EventsApi.Contracts\EventsApi.Contracts.csproj">
+      <Project>{16B29C2E-24E5-4492-A80C-867616767E40}</Project>
+      <Name>EventsApi.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -41,9 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IDensityApi.cs" />
-    <Compile Include="IEventApi.cs" />
+    <Compile Include="DataProviders\IDataProvider.cs" />
+    <Compile Include="EventApi\IDensityApi.cs" />
+    <Compile Include="EventApi\IEventApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DataProviders\ProviderType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EventApi.Models\EventApi.Models.csproj">

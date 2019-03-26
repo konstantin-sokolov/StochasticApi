@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -9,6 +10,8 @@ using EventApi.Implementation.Api;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
 using EventsApi.Contracts;
+using EventsApi.Contracts.DataProviders;
+using EventsApi.Contracts.EventApi;
 using Generators;
 using Moq;
 
@@ -21,7 +24,7 @@ namespace PerformanceTests
         private IDensityApi _densityApi;
         private IDataProvider _provider;
         private NLog.ILogger _logger;
-        private const int RequestedSize = 800;
+        private const int RequestedSize = 400;
         private List<DensityInfo> _currentInfo;
         private long _requestedStart;
         private long _requestedStop;
@@ -33,17 +36,17 @@ namespace PerformanceTests
             _logger = mockLogger.Object;
 
             //you can use once generated file but till you hasn't it you should generate it everyTime
-            //var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
-            //_provider = new MMFDataProvider(@"C:\Repos\StochasticChartApplication\Tests\PerformanceTests\bin\Release\MmfGeneratedFiles\LargeData.bin", entitySize);
+            var entitySize = Marshal.SizeOf(typeof(PayloadEvent));
+            _provider = new MMFDataProvider(@"C:\Repos\StochasticChartApplication\Tests\PerformanceTests\bin\Release\MmfGeneratedFiles\LargeData.bin", entitySize);
 
-            var factory = new GeneratorFactory(_logger);
-            var generator = factory.GetGenerator(ProviderType.MemoryMappedFile);
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "MmfGeneratedFiles", "LargeData.bin");
-            _provider = generator.GenerateDataProviderAsync(100L * 1000L * 1000L, new object[] { filePath }).Result;
+            //var factory = new GeneratorFactory(_logger);
+            //var generator = factory.GetGenerator(ProviderType.MemoryMappedFile);
+            //var filePath = Path.Combine(Directory.GetCurrentDirectory(), "MmfGeneratedFiles", "LargeData.bin");
+            //_provider = generator.GenerateDataProviderAsync(100L * 1000L * 1000L, new object[] { filePath }).Result;
         }
 
         [IterationSetup]
-        public async Task Setup()
+        public void Setup()
         {
             _densityApi = new DensityApi(_logger, _provider);
             var globalStart = _provider.GetGlobalStartTick();
@@ -55,7 +58,7 @@ namespace PerformanceTests
             _requestedStart = middle - newLength / 4;
             _requestedStop = middle + newLength / 4;
             _currentGroupInterval = newLength / RequestedSize;
-            _currentInfo = await _densityApi.GetDensityInfoAsync(middle - newLength / 2, middle + newLength / 2, _currentGroupInterval,CancellationToken.None);
+            _currentInfo = _densityApi.GetDensityInfoAsync(middle - newLength / 2, middle + newLength / 2, _currentGroupInterval,CancellationToken.None).Result;
         }
 
         [Benchmark]

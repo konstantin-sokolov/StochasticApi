@@ -108,6 +108,10 @@
       <Project>{484a5d12-305b-410c-ad37-601bb2e10cfb}</Project>
       <Name>EventApi.Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\EventsApi\EventsApi.Contracts\EventsApi.Contracts.csproj">
+      <Project>{16b29c2e-24e5-4492-a80c-867616767e40}</Project>
+      <Name>EventsApi.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Helpers\Generators\Generators.csproj">
       <Project>{5baa032e-3766-4d4e-b344-35051e281e45}</Project>
       <Name>Generators</Name>

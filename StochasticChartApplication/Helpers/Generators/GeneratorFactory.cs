@@ -1,5 +1,5 @@
 ﻿using System;
-using EventApi.Implementation.DataProviders;
+using EventsApi.Contracts.DataProviders;
 using NLog;
 
 namespace Generators

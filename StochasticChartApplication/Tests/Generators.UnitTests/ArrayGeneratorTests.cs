@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
+using EventsApi.Contracts.DataProviders;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NLog;
@@ -18,7 +19,7 @@ namespace Generators.UnitTests
         
             var generatorFactory = new GeneratorFactory(_logger);
             var generator = generatorFactory.GetGenerator(ProviderType.Array);
-            var dataProvider = generator.GenerateDataProviderAsync(size, null).Result;
+            var dataProvider = await generator.GenerateDataProviderAsync(size, null);
             await CheckDataProvider(dataProvider, size);
         }
 

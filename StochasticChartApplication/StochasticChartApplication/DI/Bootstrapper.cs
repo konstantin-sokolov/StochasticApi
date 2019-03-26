@@ -2,6 +2,7 @@
 using Autofac;
 using EventApi.Implementation.DataProviders;
 using EventsApi.Contracts;
+using EventsApi.Contracts.EventApi;
 using NLog;
 using Prism.Autofac;
 using StochasticUi.ViewModel;

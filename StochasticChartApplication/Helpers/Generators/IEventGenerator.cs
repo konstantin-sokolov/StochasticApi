@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using EventApi.Implementation.DataProviders;
+using EventsApi.Contracts.DataProviders;
 
 namespace Generators
 {

@@ -1,6 +1,7 @@
 ﻿using Autofac;
-using EventApi.Implementation.DataProviders;
 using EventsApi.Contracts;
+using EventsApi.Contracts.DataProviders;
+using EventsApi.Contracts.EventApi;
 using NLog;
 using StochasticUi.ViewModel.Renders;
 using StochasticUi.ViewModel.Scale;

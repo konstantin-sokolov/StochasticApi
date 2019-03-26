@@ -58,12 +58,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\EventsApi\EventApi.Implementation\EventApi.Implementation.csproj">
-      <Project>{3AF3EE9D-9EDB-454A-B43E-826A8C09E945}</Project>
+      <Project>{3af3ee9d-9edb-454a-b43e-826a8c09e945}</Project>
       <Name>EventApi.Implementation</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\EventsApi\EventApi.Models\EventApi.Models.csproj">
       <Project>{484A5D12-305B-410C-AD37-601BB2E10CFB}</Project>
       <Name>EventApi.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EventsApi\EventsApi.Contracts\EventsApi.Contracts.csproj">
+      <Project>{16b29c2e-24e5-4492-a80c-867616767e40}</Project>
+      <Name>EventsApi.Contracts</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

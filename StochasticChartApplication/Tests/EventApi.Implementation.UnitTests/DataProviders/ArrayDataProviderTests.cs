@@ -7,7 +7,7 @@ using EventApi.Models;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace EventApi.Implementation.UnitTests
+namespace EventApi.Implementation.UnitTests.DataProviders
 {
     [TestFixture]
     [Parallelizable(ParallelScope.All)]

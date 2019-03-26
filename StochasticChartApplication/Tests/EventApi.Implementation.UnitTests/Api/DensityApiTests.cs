@@ -13,7 +13,7 @@ using Moq;
 using NLog;
 using NUnit.Framework;
 
-namespace EventApi.Implementation.UnitTests
+namespace EventApi.Implementation.UnitTests.Api
 {
     [TestFixture]
     public class DensityApiTests

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Models;
+using EventsApi.Contracts.DataProviders;
 using FluentAssertions;
 using Moq;
 using NLog;

@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using AutoFixture;
 using EventApi.Implementation.DataProviders;
+using EventsApi.Contracts.DataProviders;
 using Generators.UnitTests.TestCases;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;

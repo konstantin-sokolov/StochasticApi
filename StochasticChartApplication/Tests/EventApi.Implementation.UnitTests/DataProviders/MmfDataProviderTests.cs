@@ -19,7 +19,7 @@ namespace EventApi.Implementation.UnitTests.DataProviders
         readonly IFixture _fixture = new Fixture();
         private string _generatedFile;
         private PayloadEvent[] _expectedValues;
-        private IDataProvider _dataProvider;
+        private MMFDataProvider _dataProvider;
         private void WriteDataToFile(string filePath, int entitySize, PayloadEvent[] array)
         {
             var fileSize = entitySize * array.Length;

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EventApi.Implementation.DataProviders;
 using EventApi.Implementation.Helpers;
+using EventsApi.Contracts.DataProviders;
 
 namespace EventApi.Implementation.Api
 {
