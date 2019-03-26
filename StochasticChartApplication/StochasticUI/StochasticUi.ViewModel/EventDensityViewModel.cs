@@ -78,25 +78,30 @@ namespace StochasticUi.ViewModel
 
         private async Task RecalculateChartImage()
         {
+            _logger.Info("RecalculateChartImage");
+            _calcDensityTokenSource?.Cancel();
+            var ctnSource = new CancellationTokenSource();
+            _calcDensityTokenSource = ctnSource;
+            var token = _calcDensityTokenSource.Token;
+            var correlationId = Guid.NewGuid();
+            _currentInfoCorrelationId = correlationId;
+
             try
             {
-                _logger.Info("RecalculateChartImage");
-                _calcDensityTokenSource?.Cancel();
 
-                _calcDensityTokenSource = new CancellationTokenSource();
-                var token = _calcDensityTokenSource.Token;
-                var correlationId = Guid.NewGuid();
-                _currentInfoCorrelationId = correlationId;
 
                 var drawTask = DrawCurrentImage(token, correlationId);
 
                 var getDataTask = GetDataFromApi(token);
                 await Task.WhenAll(getDataTask, drawTask);
 
+                if (_currentInfoCorrelationId != correlationId)
+                    return;
+
                 _currentDensityInfo = getDataTask.Result;
                 await DrawCurrentImage(token, correlationId);
             }
-            catch (AggregateException e )
+            catch (AggregateException e)
             {
                 foreach (var innerException in e.InnerExceptions)
                 {
@@ -105,6 +110,7 @@ namespace StochasticUi.ViewModel
                         _logger.Info("RecalculateChartImage: Task was cancelled");
                         continue;
                     }
+
                     _logger.Error($"RecalculateChartImage: {innerException.Message} - {innerException.StackTrace}");
                 }
             }
@@ -115,6 +121,13 @@ namespace StochasticUi.ViewModel
             catch (Exception ex)
             {
                 _logger.Error($"RecalculateChartImage: {ex.Message} - {ex.StackTrace}");
+            }
+            finally
+            {
+                if (_calcDensityTokenSource == ctnSource)
+                    _calcDensityTokenSource = null;
+
+                ctnSource.Dispose();
             }
         }
 
